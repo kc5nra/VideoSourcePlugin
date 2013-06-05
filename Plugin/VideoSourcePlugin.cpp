@@ -32,10 +32,18 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
             HWND hwndPathOrUrl = GetDlgItem(hwnd, IDC_PATH_OR_URL);
             HWND hwndWidth = GetDlgItem(hwnd, IDC_WIDTH);
             HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
+            HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
+            HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
           
             SendMessage(hwndPathOrUrl, WM_SETTEXT, 0, (LPARAM)config->pathOrUrl.Array());
             SendMessage(hwndWidth, WM_SETTEXT, 0, (LPARAM)IntString(config->width).Array());
             SendMessage(hwndHeight, WM_SETTEXT, 0, (LPARAM)IntString(config->height).Array());
+         
+            SendMessage(hwndStretch, BM_SETCHECK, config->isStretching, 0);
+
+            SendMessage(hwndVolume, TBM_SETRANGE, (WPARAM)1, (LPARAM)MAKELONG(0,100));
+            SendMessage(hwndVolume, TBM_SETPOS, (WPARAM)1, config->volume);
+           
 
             return TRUE;
         }
@@ -50,6 +58,8 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     HWND hwndPathOrUrl = GetDlgItem(hwnd, IDC_PATH_OR_URL);
                     HWND hwndWidth = GetDlgItem(hwnd, IDC_WIDTH);
                     HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
+                    HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
+                    HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
 
                     String str;
                     str.SetLength((UINT)SendMessage(hwndPathOrUrl, WM_GETTEXTLENGTH, 0, 0));
@@ -66,6 +76,10 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     if(!str.Length()) return TRUE;
                     SendMessage(hwndHeight, WM_GETTEXT, str.Length()+1, (LPARAM)str.Array());
                     config->height = str.ToInt();
+                    
+                    config->volume = (unsigned int)SendMessage(hwndVolume, TBM_GETPOS, (WPARAM)1, config->volume);
+
+                    config->isStretching = (SendMessage(hwndStretch, BM_GETCHECK, 0, 0) == 1);
 
                     EndDialog(hwnd, IDOK);
                     return TRUE;

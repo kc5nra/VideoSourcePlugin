@@ -16,6 +16,9 @@ public:
     String pathOrUrl;
     unsigned int width;
     unsigned int height;
+    bool isStretching;
+    unsigned int volume;
+
 
     VideoSourceConfig(XElement *element)
     {
@@ -28,6 +31,8 @@ public:
         pathOrUrl = TEXT("");
         width = 640;
         height = 480;
+        volume = 100;
+        isStretching = false;
     }
 
     void Reload()
@@ -35,6 +40,8 @@ public:
         pathOrUrl = element->GetString(TEXT("pathOrUrl"));
         width = element->GetInt(TEXT("width"));
         height = element->GetInt(TEXT("height"));
+        volume = element->GetInt(TEXT("volume"));
+        isStretching = element->GetInt(TEXT("isStretching")) == 1;
     }
 
     void Save()
@@ -42,6 +49,8 @@ public:
         element->SetString(TEXT("pathOrUrl"), pathOrUrl);
         element->SetInt(TEXT("width"), width);
         element->SetInt(TEXT("height"), height);
+        element->SetInt(TEXT("volume"), volume);
+        element->SetInt(TEXT("isStretching"), isStretching ? 1 : 0);
     }
 };
 

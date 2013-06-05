@@ -14,7 +14,7 @@
 // Dialog resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDD_VIDEOCONFIG DIALOG 0, 0, 283, 132
+IDD_VIDEOCONFIG DIALOG 0, 0, 297, 138
 STYLE DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_POPUP | WS_SYSMENU
 EXSTYLE WS_EX_WINDOWEDGE
 CAPTION "Plugins.VideoSource.Settings"
@@ -23,11 +23,14 @@ FONT 8, "Ms Shell Dlg"
     EDITTEXT        IDC_PATH_OR_URL, 13, 31, 256, 12, ES_AUTOHSCROLL
     LTEXT           "Plugins.VideoSource.PathOrUrl", IDC_STATIC, 13, 18, 99, 8, SS_LEFT
     EDITTEXT        IDC_WIDTH, 73, 49, 35, 12, ES_AUTOHSCROLL
-    LTEXT           "Plugins.VideoSource.Width", IDC_STATIC, 13, 52, 55, 8, SS_LEFT
+    LTEXT           "Plugins.VideoSource.VideoWidth", IDC_STATIC, 13, 52, 55, 8, SS_LEFT
     EDITTEXT        IDC_HEIGHT, 73, 63, 35, 12, ES_AUTOHSCROLL
-    LTEXT           "Plugins.VideoSource.Height", IDC_STATIC, 13, 66, 55, 8, SS_LEFT
-    PUSHBUTTON      "Cancel", IDCANCEL, 228, 116, 50, 14
-    DEFPUSHBUTTON   "OK", IDOK, 176, 116, 50, 14
+    LTEXT           "Plugins.VideoSource.VideoHeight", IDC_STATIC, 13, 66, 55, 8, SS_LEFT
+    PUSHBUTTON      "Cancel", IDCANCEL, 242, 116, 50, 14
+    DEFPUSHBUTTON   "OK", IDOK, 190, 116, 50, 14
+    AUTOCHECKBOX    "Plugins.VideoSource.StretchImage", IDC_STRETCH, 13, 91, 125, 8
+    CONTROL         "", IDC_VOLUME, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 157, 66, 100, 15
+    LTEXT           "Plugins.VideoSource.Volume", IDC_STATIC, 157, 52, 92, 8, SS_LEFT
 }
 
 

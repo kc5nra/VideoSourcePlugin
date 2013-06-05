@@ -10,7 +10,7 @@
     <ClInclude Include="VideoSourcePlugin.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\BrowserSourcePlugin\Plugin\resource.h">
+    <ClInclude Include="resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,7 +10,9 @@ VideoSource::VideoSource(XElement *data)
 	Log(TEXT("Using Browser Source"));
 
     vlc = VideoSourcePlugin::instance->GetVlc();
-
+    mediaPlayer = nullptr;
+    pixelData = nullptr;
+    
     config = new VideoSourceConfig(data);
     InitializeCriticalSection(&textureLock);
     UpdateSettings();	
@@ -40,8 +42,11 @@ VideoSource::~VideoSource()
     config = nullptr;
 }
 
-static void *lock(void *data, void **p_pixels)
+void *lock(void *data, void **p_pixels)
 {
+
+
+
     VideoSource *context = static_cast<VideoSource *>(data);
 
     *p_pixels = context->pixelData;
@@ -50,20 +55,89 @@ static void *lock(void *data, void **p_pixels)
     return NULL;
 }
 
-static void unlock(void *data, void *id, void *const *p_pixels)
+void unlock(void *data, void *id, void *const *p_pixels)
 {
     VideoSource *context = static_cast<VideoSource *>(data);
 
-    context->GetTexture()->SetImage(*p_pixels, GS_IMAGEFORMAT_BGRA, context->config->width * 4);
+    BYTE *textureData;
+    unsigned int pitch;
+    context->GetTexture()->Map(textureData, pitch);
+
+    memset(textureData, 0, pitch * context->config->height);
+
+    for(unsigned int y = 0; y < context->mediaHeight; y++)
+    {
+        LPBYTE curInput  = ((LPBYTE)*p_pixels) + ((context->mediaWidth * 4) * y);
+        LPBYTE curOutput = ((LPBYTE)textureData) + (pitch * (y + context->mediaHeightOffset));
+
+        mcpy(curOutput + (context->mediaWidthOffset * 4), curInput, context->mediaWidth * 4);
+    }
+
+    context->GetTexture()->Unmap();
 
     LeaveCriticalSection(&context->textureLock);
     
     assert(id == NULL); /* picture identifier, not needed here */
 }
 
-static void display(void *data, void *id)
+void display(void *data, void *id)
 {
 }
+
+
+unsigned VideoSource::VideoFormatCallback(
+    char *chroma,
+    unsigned *width, 
+    unsigned *height,
+    unsigned *pitches, 
+    unsigned *lines)
+{
+
+    if (!config->isStretching) {
+
+        float srcAspect = (float)(*width) / (float)(*height);
+        float dstAspect = (float)config->width / (float)config->height;
+        if (srcAspect > dstAspect) {
+            if(config->width != (*width) ) { //don't scale if size equal
+                *width  = config->width;
+                *height = static_cast<unsigned>( (*width) / srcAspect + 0.5);
+            }
+            mediaHeightOffset = (config->height - *height) / 2;
+        } else {
+            if( config->height != (*height) ) { //don't scale if size equal
+                *height = config->height;
+                *width  = static_cast<unsigned>( (*height) * srcAspect + 0.5); 
+            }
+            mediaWidthOffset = (config->width - *width) / 2;
+        }
+    } else {
+        *width = config->width;
+        *height = config->height;
+    }
+    
+    mediaWidth = *width;
+    mediaHeight = *height;
+
+    memcpy(chroma, CHROMA, sizeof(CHROMA)-1);
+    (*pitches) = mediaWidth * 4;
+    (*lines)   = mediaHeight;
+
+    if (pixelData) {
+        free(pixelData);
+        pixelData = nullptr;
+    }
+    pixelData = calloc(mediaWidth * mediaHeight * 4, 1);
+
+    return 1;
+}
+
+void VideoSource::VideoFormatCleanup()
+{
+    //m_frame_buf.resize(0);
+    //m_media_width  = 0;
+    //m_media_height = 0;
+}
+
 
 void VideoSource::Tick(float fSeconds)
 {
@@ -78,15 +152,16 @@ void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
     LeaveCriticalSection(&textureLock);
 }
 
+
+
+
 void VideoSource::UpdateSettings()
 {
-    config->Reload();
-   
-    if (pixelData) {
-        free(pixelData);
-        pixelData = nullptr;
+    if (mediaPlayer) {
+        libvlc_media_player_stop(mediaPlayer);
     }
-    pixelData = malloc(config->width * config->height * 4);
+
+    config->Reload();
 
     if (texture) {
         delete texture;
@@ -94,14 +169,17 @@ void VideoSource::UpdateSettings()
     }
     texture = CreateTexture(config->width, config->height, GS_BGRA, nullptr, FALSE, FALSE);
 
+    BYTE *textureData;
+    unsigned int pitch;
+    
+    texture->Map(textureData, pitch);
+    memset(textureData, 0, pitch * config->height);
+    texture->Unmap();
+
     videoSize.x = float(config->width);
     videoSize.y = float(config->height);
 
-    char *url = "c:\\movie.m4v";
-
-    if (mediaPlayer) {
-        libvlc_media_player_stop(mediaPlayer);
-    } else {
+    if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
         libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     }
@@ -114,7 +192,10 @@ void VideoSource::UpdateSettings()
         Free(utf8PathOrUrl);
     }
 
+    
     libvlc_video_set_format(mediaPlayer, "RV32", config->width, config->height, config->width * 4);
+    libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
+    libvlc_audio_set_volume(mediaPlayer, config->volume);
     
     libvlc_media_player_play(mediaPlayer);
 }
