@@ -3,9 +3,9 @@ pushd %_CWD%
 set _CWD=%CD% 
 popd 
 
-for /f "delims=" %%a in ('"%GIT_BIN_DIR%\git" describe') do @set SPP_VERSION_BARE=%%a
+for /f "delims=" %%a in ('"%GIT_BIN_DIR%\git" describe') do @set VSP_VERSION_BARE=%%a
 
-set SPP_VERSION="VSP_VERSION=L"%VSP_VERSION_BARE%-x64""
+set VSP_VERSION="VSP_VERSION=L"%VSP_VERSION_BARE%-x64""
 msbuild /t:Rebuild /property:Configuration=Release;Platform=x64
 
 
@@ -22,9 +22,3 @@ cd Release64
 zip -r VSP-%VSP_VERSION_BARE%-x64.zip .
 move VSP-%VSP_VERSION_BARE%-x64.zip ..
 cd ..
-
-rem set SPP_VERSION="SPP_VERSION=L"%SPP_VERSION_BARE%-x86""
-rem msbuild /t:Rebuild /property:Configuration=Release;Platform=Win32
-
-rem del SPP-%SPP_VERSION_BARE%.zip
-rem zip -j SPP-%SPP_VERSION_BARE%-x86.zip Release\ServerPingPlugin.dll

@@ -62,7 +62,6 @@ BOOL CALLBACK DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     case DLL_PROCESS_ATTACH:
         {
             // order is important!
-       
             hmodLibVlcCore = LoadLibrary(L".\\plugins\\VideoSourcePlugin\\libvlccore.dll");
             hmodLibVlc = LoadLibrary(L".\\plugins\\VideoSourcePlugin\\libvlc.dll");
         

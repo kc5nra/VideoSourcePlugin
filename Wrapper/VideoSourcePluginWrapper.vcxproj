@@ -124,6 +124,7 @@
       <StripPrivateSymbols>$(SolutionDir)..\OBS\rundir\pdb32\stripped\$(TargetName).pdb</StripPrivateSymbols>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)$(ProjectName).dll" "$(SolutionDir)..\OBS\rundir\plugins"</Command>
@@ -149,6 +150,7 @@
       <ProgramDatabaseFile>$(SolutionDir)..\OBS\rundir\pdb32\$(TargetName).pdb</ProgramDatabaseFile>
       <StripPrivateSymbols>$(SolutionDir)..\OBS\rundir\pdb32\stripped\$(TargetName).pdb</StripPrivateSymbols>
       <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)$(ProjectName).dll" "$(SolutionDir)..\OBS\rundir\plugins"</Command>

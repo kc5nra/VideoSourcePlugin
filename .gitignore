@@ -24,10 +24,10 @@ Plugin/x64/Release
 Plugin/win32/Debug
 Plugin/win32/Release
 
-Wrapper/x86/Debug
-Wrapper/x86/Release
-Wrapper/x86/Debug
-Wrapper/x86/Release
+Wrapper/x64/Debug
+Wrapper/x64/Release
+Wrapper/win32/Debug
+Wrapper/win32/Release
 
 Release32
 Release64
