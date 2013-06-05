@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Localization.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoSource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoSourcePlugin.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrowserSourcePlugin\Plugin\resource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{e0d5cd02-7f75-46eb-864d-b6dfd980653a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{88f23707-9382-4e60-915d-06c075a74f99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{e3b6340b-4c4f-4d0d-a1b5-ce7644fc4e73}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="VideoSourcePlugin.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VideoSourcePlugin.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
