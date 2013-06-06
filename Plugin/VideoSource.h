@@ -29,6 +29,10 @@ private:
 
     AudioOutputStreamHandler *audioOutputStreamHandler;
 
+    Vect2 previousRenderSize;
+    Vect2 mediaOffset;
+    Vect2 mediaSize;
+
 public:
     VideoSourceConfig *config;
     CRITICAL_SECTION textureLock;
@@ -39,6 +43,7 @@ public:
     unsigned int mediaHeight;
     unsigned int mediaWidthOffset;
     unsigned int mediaHeightOffset;
+
 
 public:
     Texture *GetTexture() { return texture; }

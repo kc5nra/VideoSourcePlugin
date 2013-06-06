@@ -33,8 +33,8 @@ FONT 8, "Ms Shell Dlg"
     LTEXT           "Plugins.VideoSource.Volume", IDC_STATIC, 200, 40, 92, 8, SS_LEFT
     GROUPBOX        "Plugins.VideoSource.Audio", IDC_STATIC, 190, 25, 162, 93
     GROUPBOX        "Plugins.VideoSource.Video", IDC_STATIC, 13, 25, 162, 93
-    AUTORADIOBUTTON "Plugins.VideoSource.AudioOutputStream", IDC_AUDIO_OUTPUT_STREAM, 207, 78, 140, 8, WS_GROUP
-    AUTORADIOBUTTON "Plugins.VideoSource.AudioOutputDevice", IDC_AUDIO_OUTPUT_DEVICE, 207, 91, 140, 8, WS_GROUP
+    AUTORADIOBUTTON "Plugins.VideoSource.AudioOutputStream", IDC_AUDIO_OUTPUT_STREAM, 207, 78, 140, 8, WS_GROUP | WS_TABSTOP
+    AUTORADIOBUTTON "Plugins.VideoSource.AudioOutputDevice", IDC_AUDIO_OUTPUT_DEVICE, 207, 91, 140, 8, WS_TABSTOP
 }
 
 

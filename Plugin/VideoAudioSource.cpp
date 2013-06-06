@@ -67,15 +67,7 @@ void VideoAudioSource::PushAudio(const void *lpData, unsigned int size)
     if(lpData)
     {
         EnterCriticalSection(&sampleBufferLock);
-        sampleBuffer.AppendArray(static_cast<const BYTE *>(lpData), size);
+        sampleBuffer.AppendArray(static_cast<const BYTE *>(lpData), size * 4);
         LeaveCriticalSection(&sampleBufferLock);
     }
 }
-
-//void VideoAudioSource::FlushSamples()
-//{
-//    EnterCriticalSection(&sampleBufferLock);
-//    sampleBuffer.Clear();
-//    LeaveCriticalSection(&sampleBufferLock);
-//}
-

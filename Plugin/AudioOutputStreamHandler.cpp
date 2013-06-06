@@ -24,21 +24,8 @@ void AudioOutputStreamHandler::AudioCleanupCallback()
 
 }
 
-#include <fstream>
-
-
 void AudioOutputStreamHandler::AudioPlayCallback(const void *samples, unsigned int count, int64_t pts)
-{
-    static List<BYTE> bytes;
-
-    bytes.AppendArray((BYTE*)samples, count);
-
-    if (bytes.Num() > 1000000) {
-        std::ofstream ofs("outfile", std::ios::binary|std::ios::out);
-        ofs.write((const char *)bytes.Array(), bytes.Num());
-        ofs.close();
-    }
-
+{  
     audioSource->PushAudio(samples, count);
 }
 

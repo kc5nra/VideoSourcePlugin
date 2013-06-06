@@ -14,6 +14,7 @@ VideoSource::VideoSource(XElement *data)
     vlc = VideoSourcePlugin::instance->GetVlc();
     mediaPlayer = nullptr;
     pixelData = nullptr;
+    audioOutputStreamHandler = nullptr;
     
     config = new VideoSourceConfig(data);
     InitializeCriticalSection(&textureLock);
@@ -22,14 +23,13 @@ VideoSource::VideoSource(XElement *data)
 
 VideoSource::~VideoSource()
 { 
-
-
     if (mediaPlayer) {
         libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
         libvlc_media_player_stop(mediaPlayer);
         
         if (audioOutputStreamHandler) {
             delete audioOutputStreamHandler;
+            audioOutputStreamHandler = nullptr;
         }
 
         libvlc_media_player_release(mediaPlayer);
@@ -53,35 +53,21 @@ VideoSource::~VideoSource()
     config = nullptr;
 }
 
-void *lock(void *data, void **p_pixels)
+void *lock(void *data, void **pixelData)
 {
     VideoSource *context = static_cast<VideoSource *>(data);
 
-    *p_pixels = context->pixelData;
+    *pixelData = context->pixelData;
 
     EnterCriticalSection(&context->textureLock);
     return NULL;
 }
 
-void unlock(void *data, void *id, void *const *p_pixels)
+void unlock(void *data, void *id, void *const *pixelData)
 {
     VideoSource *context = static_cast<VideoSource *>(data);
 
-    BYTE *textureData;
-    unsigned int pitch;
-    context->GetTexture()->Map(textureData, pitch);
-
-    memset(textureData, 0, pitch * context->config->height);
-
-    for(unsigned int y = 0; y < context->mediaHeight; y++)
-    {
-        LPBYTE curInput  = ((LPBYTE)*p_pixels) + ((context->mediaWidth * 4) * y);
-        LPBYTE curOutput = ((LPBYTE)textureData) + (pitch * (y + context->mediaHeightOffset));
-
-        mcpy(curOutput + (context->mediaWidthOffset * 4), curInput, context->mediaWidth * 4);
-    }
-
-    context->GetTexture()->Unmap();
+    context->GetTexture()->SetImage(*pixelData, GS_IMAGEFORMAT_BGRA, context->GetTexture()->Width() * 4);
 
     LeaveCriticalSection(&context->textureLock);
     
@@ -92,7 +78,6 @@ void display(void *data, void *id)
 {
 }
 
-
 unsigned VideoSource::VideoFormatCallback(
     char *chroma,
     unsigned *width, 
@@ -100,46 +85,55 @@ unsigned VideoSource::VideoFormatCallback(
     unsigned *pitches, 
     unsigned *lines)
 {
-
-
-    mediaWidthOffset = 0;
-    mediaWidthOffset = 0;
-
-    if (!config->isStretching) {
-
-        float srcAspect = (float)(*width) / (float)(*height);
-        float dstAspect = (float)config->width / (float)config->height;
-        if (srcAspect > dstAspect) {
-            if(config->width != (*width) ) { //don't scale if size equal
-                *width  = config->width;
-                *height = static_cast<unsigned>( (*width) / srcAspect + 0.5);
-            }
-            mediaHeightOffset = (config->height - *height) / 2;
-        } else {
-            if( config->height != (*height) ) { //don't scale if size equal
-                *height = config->height;
-                *width  = static_cast<unsigned>( (*height) * srcAspect + 0.5); 
-            }
-            mediaWidthOffset = (config->width - *width) / 2;
+    if (!texture || texture->Width() != *width || texture->Height() != *height) {
+        if (texture) {
+            delete texture;
+            texture = nullptr;
         }
-    } else {
-        *width = config->width;
-        *height = config->height;
-    }
+
+        texture = CreateTexture(*width, *height, GS_BGRA, nullptr, FALSE, FALSE);
+    }   
     
-    mediaWidth = *width;
-    mediaHeight = *height;
-
-    memcpy(chroma, CHROMA, sizeof(CHROMA)-1);
-    (*pitches) = mediaWidth * 4;
-    (*lines)   = mediaHeight;
-
+    memcpy(chroma, CHROMA, sizeof(CHROMA) - 1);
+    *pitches = *width * 4;
+    *lines = *height;
+    
     if (pixelData) {
         free(pixelData);
         pixelData = nullptr;
     }
-    pixelData = calloc(mediaWidth * mediaHeight * 4, 1);
+    pixelData = calloc((*width) * (*height) * 4, 1);
 
+    mediaWidthOffset = 0;
+    mediaHeightOffset = 0;
+    
+    mediaWidth = *width;
+    mediaHeight = *height;
+    
+    if (!config->isStretching) {
+        float srcAspect = (float)*width / (float)*height;
+        float dstAspect = (float)config->width / (float)config->height;
+
+        if (srcAspect > dstAspect) {
+            if(config->width != (*width) ) { //don't scale if size equal
+                mediaWidth  = config->width;
+                mediaHeight = static_cast<unsigned>(mediaWidth / srcAspect + 0.5);
+            }
+            mediaHeightOffset = (config->height - mediaHeight) / 2;
+        } else {
+            if( config->height != (*height) ) { //don't scale if size equal
+                mediaHeight = config->height;
+                mediaWidth  = static_cast<unsigned>(mediaHeight * srcAspect + 0.5);
+            }
+            mediaWidthOffset = (config->width - mediaWidth) / 2;
+        }
+    } else {
+        mediaWidth = config->width;
+        mediaHeight = config->height;
+    }
+
+    previousRenderSize.x = previousRenderSize.y = 0;
+    
     return 1;
 }
 
@@ -155,14 +149,29 @@ void VideoSource::Tick(float fSeconds)
 void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 {
     EnterCriticalSection(&textureLock);
+    
+    if (previousRenderSize != size) {
+        mediaOffset.x = (float)mediaWidthOffset;
+        mediaOffset.y = (float)mediaHeightOffset;
+
+        mediaSize.x = (float)mediaWidth;
+        mediaSize.y = (float)mediaHeight;
+        
+        mediaSize += mediaOffset;
+
+        Vect2 scale = size / videoSize;
+        mediaOffset *= scale;
+        mediaSize *= scale;
+
+        previousRenderSize.x = size.x;
+        previousRenderSize.y = size.y;
+    }
+
     if (texture) {
-        DrawSprite(texture, 0xFFFFFFFF, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+        DrawSprite(texture, 0xFFFFFFFF, pos.x + mediaOffset.x, pos.y + mediaOffset.y, pos.x + mediaSize.x, pos.y + mediaSize.y);
     }
     LeaveCriticalSection(&textureLock);
 }
-
-
-
 
 void VideoSource::UpdateSettings()
 {
@@ -175,30 +184,19 @@ void VideoSource::UpdateSettings()
 
     if (audioOutputStreamHandler) {
         delete audioOutputStreamHandler;
+        audioOutputStreamHandler = nullptr;
     }
 
     config->Reload();
-
-    if (texture) {
-        delete texture;
-        texture = nullptr;
-    }
-    texture = CreateTexture(config->width, config->height, GS_BGRA, nullptr, FALSE, FALSE);
-
-    BYTE *textureData;
-    unsigned int pitch;
-    
-    texture->Map(textureData, pitch);
-    memset(textureData, 0, pitch * config->height);
-    texture->Unmap();
 
     videoSize.x = float(config->width);
     videoSize.y = float(config->height);
 
     if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
-        libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     }
+
+    
 
     char *utf8PathOrUrl = config->pathOrUrl.CreateUTF8String();
     if (utf8PathOrUrl) {
@@ -207,12 +205,12 @@ void VideoSource::UpdateSettings()
         libvlc_media_release(media);
         Free(utf8PathOrUrl);
     }
-    
-    libvlc_video_set_format(mediaPlayer, "RV32", config->width, config->height, config->width * 4);
+
+    libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
     libvlc_audio_set_volume(mediaPlayer, config->volume);
 
-     if (config->isAudioOutputToStream) {
+    if (config->isAudioOutputToStream) {
         audioOutputStreamHandler = new AudioOutputStreamHandler(mediaPlayer);
     }
     

@@ -34,7 +34,9 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
             HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
             HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
             HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
-          
+            HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_STREAM);
+            HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+
             SendMessage(hwndPathOrUrl, WM_SETTEXT, 0, (LPARAM)config->pathOrUrl.Array());
             SendMessage(hwndWidth, WM_SETTEXT, 0, (LPARAM)IntString(config->width).Array());
             SendMessage(hwndHeight, WM_SETTEXT, 0, (LPARAM)IntString(config->height).Array());
@@ -44,6 +46,9 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
             SendMessage(hwndVolume, TBM_SETRANGE, (WPARAM)1, (LPARAM)MAKELONG(0,100));
             SendMessage(hwndVolume, TBM_SETPOS, (WPARAM)1, config->volume);
            
+            SendMessage(hwndIsAudioOutputToStream, BM_SETCHECK, config->isAudioOutputToStream, 0);
+            SendMessage(hwndIsAudioOutputToDevice, BM_SETCHECK, !config->isAudioOutputToStream, 0);
+
 
             return TRUE;
         }
@@ -60,6 +65,8 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
                     HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
                     HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
+                    HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_STREAM);
+                    HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
 
                     String str;
                     str.SetLength((UINT)SendMessage(hwndPathOrUrl, WM_GETTEXTLENGTH, 0, 0));
@@ -80,6 +87,8 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     config->volume = (unsigned int)SendMessage(hwndVolume, TBM_GETPOS, (WPARAM)1, config->volume);
 
                     config->isStretching = (SendMessage(hwndStretch, BM_GETCHECK, 0, 0) == 1);
+
+                    config->isAudioOutputToStream = (SendMessage(hwndIsAudioOutputToStream, BM_GETCHECK, 0, 0) == 1);
 
                     EndDialog(hwnd, IDOK);
                     return TRUE;
