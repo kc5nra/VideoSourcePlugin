@@ -3,11 +3,13 @@
 */
 
 #include "VideoSource.h"
+#include "AudioOutputStreamHandler.h"
 #include "VideoSourcePlugin.h"
+#include <process.h>
 
 VideoSource::VideoSource(XElement *data)
 {
-	Log(TEXT("Using Browser Source"));
+	Log(TEXT("Using Video Source"));
 
     vlc = VideoSourcePlugin::instance->GetVlc();
     mediaPlayer = nullptr;
@@ -20,10 +22,19 @@ VideoSource::VideoSource(XElement *data)
 
 VideoSource::~VideoSource()
 { 
+
+
     if (mediaPlayer) {
+        libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
         libvlc_media_player_stop(mediaPlayer);
+        
+        if (audioOutputStreamHandler) {
+            delete audioOutputStreamHandler;
+        }
+
         libvlc_media_player_release(mediaPlayer);
     }
+
 
     if (pixelData) {
         free(pixelData);
@@ -44,9 +55,6 @@ VideoSource::~VideoSource()
 
 void *lock(void *data, void **p_pixels)
 {
-
-
-
     VideoSource *context = static_cast<VideoSource *>(data);
 
     *p_pixels = context->pixelData;
@@ -93,6 +101,10 @@ unsigned VideoSource::VideoFormatCallback(
     unsigned *lines)
 {
 
+
+    mediaWidthOffset = 0;
+    mediaWidthOffset = 0;
+
     if (!config->isStretching) {
 
         float srcAspect = (float)(*width) / (float)(*height);
@@ -133,9 +145,6 @@ unsigned VideoSource::VideoFormatCallback(
 
 void VideoSource::VideoFormatCleanup()
 {
-    //m_frame_buf.resize(0);
-    //m_media_width  = 0;
-    //m_media_height = 0;
 }
 
 
@@ -157,8 +166,15 @@ void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 
 void VideoSource::UpdateSettings()
 {
+
+
     if (mediaPlayer) {
+        libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
         libvlc_media_player_stop(mediaPlayer);
+    }
+
+    if (audioOutputStreamHandler) {
+        delete audioOutputStreamHandler;
     }
 
     config->Reload();
@@ -191,12 +207,16 @@ void VideoSource::UpdateSettings()
         libvlc_media_release(media);
         Free(utf8PathOrUrl);
     }
-
     
     libvlc_video_set_format(mediaPlayer, "RV32", config->width, config->height, config->width * 4);
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
     libvlc_audio_set_volume(mediaPlayer, config->volume);
+
+     if (config->isAudioOutputToStream) {
+        audioOutputStreamHandler = new AudioOutputStreamHandler(mediaPlayer);
+    }
     
+
     libvlc_media_player_play(mediaPlayer);
 }
 

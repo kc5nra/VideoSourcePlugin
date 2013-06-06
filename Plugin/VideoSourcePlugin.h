@@ -18,6 +18,7 @@ public:
     unsigned int height;
     bool isStretching;
     unsigned int volume;
+    bool isAudioOutputToStream;
 
 
     VideoSourceConfig(XElement *element)
@@ -33,6 +34,7 @@ public:
         height = 480;
         volume = 100;
         isStretching = false;
+        isAudioOutputToStream = true;
     }
 
     void Reload()
@@ -42,6 +44,7 @@ public:
         height = element->GetInt(TEXT("height"));
         volume = element->GetInt(TEXT("volume"));
         isStretching = element->GetInt(TEXT("isStretching")) == 1;
+        isAudioOutputToStream = element->GetInt(TEXT("isAudioOutputToStream")) == 1;
     }
 
     void Save()
@@ -51,6 +54,7 @@ public:
         element->SetInt(TEXT("height"), height);
         element->SetInt(TEXT("volume"), volume);
         element->SetInt(TEXT("isStretching"), isStretching ? 1 : 0);
+        element->SetInt(TEXT("isAudioOutputToStream"), isAudioOutputToStream ? 1 : 0);
     }
 };
 

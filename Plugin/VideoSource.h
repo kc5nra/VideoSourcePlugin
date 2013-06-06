@@ -11,10 +11,7 @@
 
 #define CHROMA "RV32"
 
-class DataSourceWithMimeType;
-class JavascriptExtension;
-
-struct BrowserSourceConfig;
+class AudioOutputStreamHandler;
 
 class VideoSource : public ImageSource
 {
@@ -29,6 +26,8 @@ private:
     Texture *texture;
     libvlc_instance_t *vlc;
     libvlc_media_player_t *mediaPlayer;
+
+    AudioOutputStreamHandler *audioOutputStreamHandler;
 
 public:
     VideoSourceConfig *config;

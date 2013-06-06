@@ -215,11 +215,15 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AudioOutputStreamHandler.cpp" />
+    <ClCompile Include="VideoAudioSource.cpp" />
     <ClCompile Include="VideoSource.cpp" />
     <ClCompile Include="VideoSourcePlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioOutputStreamHandler.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="VideoAudioSource.h" />
     <ClInclude Include="VideoSource.h" />
     <ClInclude Include="Localization.h" />
     <ClInclude Include="VideoSourcePlugin.h" />

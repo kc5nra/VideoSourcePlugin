@@ -20,9 +20,13 @@ static CTSTR localizationStrings[] = {
     KEY("ClassName"),           L"Video",
     KEY("Settings"),			L"Video Source Settings",
     KEY("PathOrUrl"),			L"Enter the path of the video file you would like to load:",
+    KEY("Video"),               L"Video Settings",
     KEY("VideoWidth"),          L"Video Width:",
     KEY("VideoHeight"),         L"Video Height:",
     KEY("StretchImage"),        L"Stretch image",
-    KEY("Volume"),              L"Video Volume (0-100)"
+    KEY("Audio"),               L"Audio Settings",
+    KEY("Volume"),              L"Video Volume (0-100)",
+    KEY("AudioOutputStream"),   L"Output audio to stream",
+    KEY("AudioOutputDevice"),   L"Output audio to device",
 };
 

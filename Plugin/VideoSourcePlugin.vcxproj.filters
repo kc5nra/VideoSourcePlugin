@@ -13,6 +13,12 @@
     <ClInclude Include="resource.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="VideoAudioSource.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioOutputStreamHandler.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -30,6 +36,12 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="VideoSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoAudioSource.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioOutputStreamHandler.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
