@@ -29,11 +29,16 @@ Wrapper/x64/Release
 Wrapper/win32/Debug
 Wrapper/win32/Release
 
-Release32
-Release64
+Release20x86
+Release20x64
+Release21x86
+Release21x64
+
+vlc21x6
 
 ipch
 
 VSP-*.zip
 VSP-*.7z
+VSP21-*.7z
 

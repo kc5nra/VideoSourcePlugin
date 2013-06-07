@@ -1,7 +1,5 @@
 #pragma once
 
-#define VLC21
-
 #ifdef VLC21
     
     #pragma include_alias (<vlc/vlc.h>                      , <vlc21/vlc.h>                        )
