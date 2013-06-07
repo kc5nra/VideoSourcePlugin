@@ -34,8 +34,10 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
             HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
             HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
             HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
-            HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_STREAM);
-            HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+            HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_STREAM);
+            HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_DEVICE);
+            HWND hwndAudioOutputType = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TYPE);
+            HWND hwndAudioOutputDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
 
             SendMessage(hwndPathOrUrl, WM_SETTEXT, 0, (LPARAM)config->pathOrUrl.Array());
             SendMessage(hwndWidth, WM_SETTEXT, 0, (LPARAM)IntString(config->width).Array());
@@ -48,7 +50,51 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
            
             SendMessage(hwndIsAudioOutputToStream, BM_SETCHECK, config->isAudioOutputToStream, 0);
             SendMessage(hwndIsAudioOutputToDevice, BM_SETCHECK, !config->isAudioOutputToStream, 0);
+            
+            EnableWindow(hwndAudioOutputType, !config->isAudioOutputToStream);
+            EnableWindow(hwndAudioOutputDevice, !config->isAudioOutputToStream);
 
+            int index = -1;
+
+            auto audioOutputTypes = config->GetAudioOutputTypes();
+
+            for(auto i = audioOutputTypes.begin(); i < audioOutputTypes.end(); i++) {
+                AudioOutputType &audioOutputType = *i;
+                SendMessage(hwndAudioOutputType, CB_ADDSTRING, 0, (LPARAM)audioOutputType.GetDescription().Array());
+                if (audioOutputType.GetName() == config->audioOutputType) {
+                    index = (int)(i - audioOutputTypes.begin());
+                }
+            }
+
+            if (index < 0) {
+                index = 0;                
+            }
+
+            SendMessage(hwndAudioOutputType, CB_SETCURSEL, index, 0);
+
+            AudioOutputType &audioOutputType = config->GetAudioOutputTypes()[index];
+            auto audioOutputDevices = audioOutputType.GetAudioOutputDevices();
+        
+            index = -1;
+
+            if (audioOutputDevices.size()) {
+                for(auto i = audioOutputDevices.begin(); i < audioOutputDevices.end(); i++) {
+                    AudioOutputDevice &audioOutputDevice = *i;
+                    SendMessage(hwndAudioOutputDevice, CB_ADDSTRING, 0, (LPARAM)audioOutputDevice.GetName().Array());
+                    if (audioOutputDevice.GetName() == config->audioOutputDevice) {
+                        index = (int)(i - audioOutputDevices.begin());
+                    }
+                }
+             
+                if (index < 0) {
+                    index = 0;                
+                }
+
+                SendMessage(hwndAudioOutputDevice, CB_SETCURSEL, index, 0);
+                EnableWindow(hwndAudioOutputDevice, TRUE);
+            }  else {
+                EnableWindow(hwndAudioOutputDevice, FALSE);
+            }
 
             return TRUE;
         }
@@ -56,6 +102,74 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
         {
             switch(LOWORD(wParam)) 
             {
+            case IDC_AUDIO_OUTPUT_TO_DEVICE:
+            case IDC_AUDIO_OUTPUT_TO_STREAM:
+                {
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        VideoSourceConfig *config = (VideoSourceConfig *)GetWindowLongPtr(hwnd, DWLP_USER);
+
+                        HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_STREAM);
+                        HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_DEVICE);
+                        HWND hwndAudioOutputType = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TYPE);
+                        HWND hwndAudioOutputDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+
+                        bool isAudioOutputToStream = (SendMessage(hwndIsAudioOutputToStream, BM_GETCHECK, 0, 0) == 1);
+
+                        EnableWindow(hwndAudioOutputType, !isAudioOutputToStream);
+                        EnableWindow(hwndAudioOutputDevice, !isAudioOutputToStream);
+                    
+                        if (!isAudioOutputToStream) {
+                            int index = (int)SendMessage(hwndAudioOutputType, CB_GETCURSEL, 0, 0);
+                            if (index > 0) {
+                                AudioOutputType &type = config->GetAudioOutputTypes()[index];
+                                EnableWindow(hwndAudioOutputDevice, (type.GetAudioOutputDevices().size()) ? TRUE : FALSE);
+                            }
+                        }
+                        return TRUE;
+                    }
+                    return FALSE;
+                }
+            case IDC_AUDIO_OUTPUT_TYPE:
+                {
+                    if (HIWORD(wParam) == CBN_SELCHANGE) {
+                        VideoSourceConfig *config = (VideoSourceConfig *)GetWindowLongPtr(hwnd, DWLP_USER);
+
+                        HWND hwndAudioOutputDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+                        HWND hwndAudioOutputType = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TYPE);
+
+                        int index = (int)SendMessage(hwndAudioOutputType, CB_GETCURSEL, 0, 0);
+
+                        SendMessage(hwndAudioOutputDevice, CB_RESETCONTENT, 0, 0);
+
+                        AudioOutputType &audioOutputType = config->GetAudioOutputTypes()[index];
+                        auto audioOutputDevices = audioOutputType.GetAudioOutputDevices();
+        
+                        index = -1;
+
+                        if (audioOutputDevices.size()) {
+                            if (audioOutputDevices.size()) {
+                                for(auto i = audioOutputDevices.begin(); i < audioOutputDevices.end(); i++) {
+                                    AudioOutputDevice &audioOutputDevice = *i;
+                                    SendMessage(hwndAudioOutputDevice, CB_ADDSTRING, 0, (LPARAM)audioOutputDevice.GetName().Array());
+                                    if (audioOutputDevice.GetName() == config->audioOutputDevice) {
+                                        index = (int)(i - audioOutputDevices.begin());
+                                    }
+                                }
+                            }        
+
+                            if (index < 0) {
+                                index = 0;                
+                            }
+
+                            SendMessage(hwndAudioOutputDevice, CB_SETCURSEL, index, 0);
+                            EnableWindow(hwndAudioOutputDevice, TRUE);
+                        } else {
+                            EnableWindow(hwndAudioOutputDevice, FALSE);
+                        }                    
+                        return TRUE;
+                    }
+                    return FALSE;
+                }
             case IDOK:
                 {
                     VideoSourceConfig *config = (VideoSourceConfig *)GetWindowLongPtr(hwnd, DWLP_USER);
@@ -65,8 +179,11 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     HWND hwndHeight = GetDlgItem(hwnd, IDC_HEIGHT);
                     HWND hwndVolume = GetDlgItem(hwnd, IDC_VOLUME);
                     HWND hwndStretch = GetDlgItem(hwnd, IDC_STRETCH);
-                    HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_STREAM);
-                    HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+                    HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_STREAM);
+                    HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_DEVICE);
+                    HWND hwndAudioOutputType = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TYPE);
+                    HWND hwndAudioOutputDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
+                    
 
                     String str;
                     str.SetLength((UINT)SendMessage(hwndPathOrUrl, WM_GETTEXTLENGTH, 0, 0));
@@ -89,6 +206,16 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                     config->isStretching = (SendMessage(hwndStretch, BM_GETCHECK, 0, 0) == 1);
 
                     config->isAudioOutputToStream = (SendMessage(hwndIsAudioOutputToStream, BM_GETCHECK, 0, 0) == 1);
+
+                    int audioOutputTypeIndex = (int)SendMessage(hwndAudioOutputType, CB_GETCURSEL, 0, 0);
+                    int audioOutputDeviceIndex = (int)SendMessage(hwndAudioOutputDevice, CB_GETCURSEL, 0, 0);
+                    
+                    AudioOutputType &type = config->GetAudioOutputTypes()[audioOutputTypeIndex];
+                    config->audioOutputType = type.GetName();
+                    if (audioOutputDeviceIndex >= 0) {
+                        AudioOutputDevice &device = type.GetAudioOutputDevices()[audioOutputDeviceIndex];
+                        config->audioOutputDevice = device.GetLongName();
+                    }
 
                     EndDialog(hwnd, IDOK);
                     return TRUE;
@@ -125,6 +252,8 @@ bool STDCALL ConfigureBrowserSource(XElement *element, bool bCreating)
     if (isMissingDataElement) {
         config->Populate();
     }
+
+    config->InitializeAudioOutputVectors(VideoSourcePlugin::instance->GetVlc());
 
     if(DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), API->GetMainWindow(), ConfigureDialogProc, (LPARAM)config) == IDOK)
     {

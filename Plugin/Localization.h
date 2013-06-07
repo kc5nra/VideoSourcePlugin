@@ -26,7 +26,9 @@ static CTSTR localizationStrings[] = {
     KEY("StretchImage"),        L"Stretch image",
     KEY("Audio"),               L"Audio Settings",
     KEY("Volume"),              L"Video Volume (0-100)",
-    KEY("AudioOutputStream"),   L"Output audio to stream",
-    KEY("AudioOutputDevice"),   L"Output audio to device",
+    KEY("AudioOutputToStream"), L"Output audio to stream",
+    KEY("AudioOutputToDevice"), L"Output audio to device",
+    KEY("AudioOutputType"),     L"Audio Module",
+    KEY("AudioOutputDevice"),   L"Audio Device",
 };
 

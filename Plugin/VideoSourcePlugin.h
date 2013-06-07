@@ -3,60 +3,15 @@
  */
 #pragma once
 
+
+
 #include "OBSApi.h"
-#include "vlc\vlc.h"
+#include "vlc.h"
+#include "VideoSourceConfig.h"
 
 #define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
 
-struct VideoSourceConfig 
-{
-private:
-    XElement *element;
-public:
-    String pathOrUrl;
-    unsigned int width;
-    unsigned int height;
-    bool isStretching;
-    unsigned int volume;
-    bool isAudioOutputToStream;
 
-
-    VideoSourceConfig(XElement *element)
-    {
-        this->element = element;
-        Reload();
-    }
-
-    void Populate()
-    {
-        pathOrUrl = TEXT("");
-        width = 640;
-        height = 480;
-        volume = 100;
-        isStretching = false;
-        isAudioOutputToStream = true;
-    }
-
-    void Reload()
-    {
-        pathOrUrl = element->GetString(TEXT("pathOrUrl"));
-        width = element->GetInt(TEXT("width"));
-        height = element->GetInt(TEXT("height"));
-        volume = element->GetInt(TEXT("volume"));
-        isStretching = element->GetInt(TEXT("isStretching")) == 1;
-        isAudioOutputToStream = element->GetInt(TEXT("isAudioOutputToStream")) == 1;
-    }
-
-    void Save()
-    {
-        element->SetString(TEXT("pathOrUrl"), pathOrUrl);
-        element->SetInt(TEXT("width"), width);
-        element->SetInt(TEXT("height"), height);
-        element->SetInt(TEXT("volume"), volume);
-        element->SetInt(TEXT("isStretching"), isStretching ? 1 : 0);
-        element->SetInt(TEXT("isAudioOutputToStream"), isAudioOutputToStream ? 1 : 0);
-    }
-};
 
 class VideoSourcePlugin
 {

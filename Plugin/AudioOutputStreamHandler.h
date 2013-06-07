@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VideoAudioSource.h"
-#include "vlc\vlc.h"
+#include "vlc.h"
 
 #define SAMP_RATE 44100
 #define SAMP_FORMAT "S16N"
@@ -10,31 +10,19 @@ class AudioOutputStreamHandler
 {
 
 private:
+    libvlc_instance_t *vlc;
     libvlc_media_player_t *mediaPlayer;
+
     VideoAudioSource *audioSource;
+    bool isAudioOutputToStream; 
 
 public:
-    AudioOutputStreamHandler::AudioOutputStreamHandler(libvlc_media_player_t *mediaPlayer)
-    {
-        this->mediaPlayer = mediaPlayer;
-        
-        libvlc_audio_set_format_callbacks(mediaPlayer, audioSetupCallbackProxy, audioCleanupCallbackProxy);
-        libvlc_audio_set_callbacks(mediaPlayer, audioPlayCallbackProxy, nullptr, nullptr, nullptr, nullptr, this); 
-        
-        audioSource = nullptr;
-    }
 
-    ~AudioOutputStreamHandler()
-    {
+    AudioOutputStreamHandler::AudioOutputStreamHandler(libvlc_instance_t *vlc, libvlc_media_player_t *mediaPlayer);
+    ~AudioOutputStreamHandler();
 
-        libvlc_audio_set_format_callbacks(mediaPlayer, nullptr, nullptr);
-        libvlc_audio_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-        
-        if (audioSource) {
-            delete audioSource;
-            audioSource = nullptr;
-        }
-    }
+public:
+    void SetAudioOutputParameters(String type, String device, bool isAudioOutputToStream);
 
 public: 
     // vlc setup callbacks

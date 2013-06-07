@@ -1,7 +1,7 @@
 
 #include "VideoAudioSource.h"
 
-#include "vlc\vlc.h"
+#include "vlc.h"
 
 VideoAudioSource::VideoAudioSource(unsigned int bitsPerSample, unsigned int blockSize, unsigned int channelMask, unsigned int rate, unsigned int channels)
 {

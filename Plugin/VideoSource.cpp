@@ -181,12 +181,7 @@ void VideoSource::UpdateSettings()
         libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
         libvlc_media_player_stop(mediaPlayer);
     }
-
-    if (audioOutputStreamHandler) {
-        delete audioOutputStreamHandler;
-        audioOutputStreamHandler = nullptr;
-    }
-
+    
     config->Reload();
 
     videoSize.x = float(config->width);
@@ -195,8 +190,6 @@ void VideoSource::UpdateSettings()
     if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
     }
-
-    
 
     char *utf8PathOrUrl = config->pathOrUrl.CreateUTF8String();
     if (utf8PathOrUrl) {
@@ -210,10 +203,11 @@ void VideoSource::UpdateSettings()
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
     libvlc_audio_set_volume(mediaPlayer, config->volume);
 
-    if (config->isAudioOutputToStream) {
-        audioOutputStreamHandler = new AudioOutputStreamHandler(mediaPlayer);
+    if (!audioOutputStreamHandler) {
+        audioOutputStreamHandler = new AudioOutputStreamHandler(vlc, mediaPlayer);
     }
-    
+
+    audioOutputStreamHandler->SetAudioOutputParameters(config->audioOutputType, config->audioOutputDevice, config->isAudioOutputToStream);
 
     libvlc_media_player_play(mediaPlayer);
 }

@@ -19,6 +19,12 @@
     <ClInclude Include="AudioOutputStreamHandler.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="VideoSourceConfig.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="vlc.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

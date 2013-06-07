@@ -5,7 +5,7 @@
 
 #include "OBSApi.h"
 #include "VideoSourcePlugin.h"
-#include "vlc\vlc.h"
+#include "vlc.h"
 
 #include <vector>
 
