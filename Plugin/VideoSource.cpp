@@ -189,6 +189,7 @@ void VideoSource::UpdateSettings()
 
     if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
+        
     }
 
     char *utf8PathOrUrl = config->pathOrUrl.CreateUTF8String();

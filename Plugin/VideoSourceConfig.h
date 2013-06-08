@@ -3,6 +3,11 @@
 #include "OBSApi.h"
 #include "vlc.h"
 
+#include <Mmdeviceapi.h>
+#include <Audioclient.h>
+#include <propsys.h>
+#include <Functiondiscoverykeys_devpkey.h>
+
 #include <tuple>
 #include <vector>
 
@@ -15,18 +20,15 @@ private:
     int index;
 
 public:
-    AudioOutputDevice(String name, String longName, int index)
+    AudioOutputDevice(String name, String longName)
     {
         this->name = name;
         this->longName = longName;
-        this->index = index;
     }
 
 public:
     String &GetName() { return name; }
     String &GetLongName() { return longName; }
-    int GetIndex() { return index; }
-
 };
 
 class AudioOutputType 
@@ -52,6 +54,7 @@ public:
     }
 
 public:
+    void SetName(String &name) { this->name = name; }
     String &GetName() { return name; }
     String &GetDescription() { return description; }
 
@@ -129,23 +132,41 @@ public:
     void InitializeAudioOutputVectors(libvlc_instance_t *vlc) {
         audioOutputTypes.clear();
         
-        libvlc_audio_output_t *list = libvlc_audio_output_list_get(vlc);
-        libvlc_audio_output_t *listNode = list;
-        while(listNode) {
-            AudioOutputType audioOutputType(listNode->psz_name, listNode->psz_description);
-            if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "aout_directx" || audioOutputType.GetName() == "adummy") {
-                for(int i = 0; i < libvlc_audio_output_device_count(vlc, listNode->psz_name); i++) {
-                    char *id = libvlc_audio_output_device_id(vlc, listNode->psz_name, i);
-                    char *longName = libvlc_audio_output_device_longname(vlc, listNode->psz_name, i);
-                    audioOutputType.AddAudioOutputDevice(AudioOutputDevice(id, longName, i));
-                    libvlc_free(id);
+        libvlc_audio_output_t *typeList = libvlc_audio_output_list_get(vlc);
+        libvlc_audio_output_t *typeListNode = typeList;
+        while(typeListNode) {
+            AudioOutputType audioOutputType(typeListNode->psz_name, typeListNode->psz_description);
+#ifdef VLC21
+            if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "mmdevice" || audioOutputType.GetName() == "directsound" || audioOutputType.GetName() == "adummy") {
+                libvlc_audio_output_device_t *deviceList = libvlc_audio_output_device_list_get(vlc, typeListNode->psz_name);
+                libvlc_audio_output_device_t *deviceListNode = deviceList;
+                while(deviceListNode) {
+                    audioOutputType.AddAudioOutputDevice(AudioOutputDevice(deviceListNode->psz_description, deviceListNode->psz_device));
+                    deviceListNode = deviceListNode->p_next;
+                }
+                libvlc_audio_output_device_list_release(deviceList);
+            }
+#else
+            if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "adummy" || audioOutputType.GetName() == "aout_directx") {
+                char *device = typeListNode->psz_name;
+
+                // fix directx reporting wrong device name
+                if (audioOutputType.GetName() == "aout_directx") {
+                    audioOutputType.SetName(String("directx"));
+                    device = "directx";
+                }
+
+                for(int i = 0; i < libvlc_audio_output_device_count(vlc, device); i++) {
+                    char *longName = libvlc_audio_output_device_longname(vlc, device, i);
+                    audioOutputType.AddAudioOutputDevice(AudioOutputDevice(longName, longName));
                     libvlc_free(longName);
                 }
                 audioOutputTypes.push_back(audioOutputType);
             }
-            listNode = listNode->p_next;
+#endif
+            typeListNode = typeListNode->p_next;
         }
-        libvlc_audio_output_list_release(list);
+        libvlc_audio_output_list_release(typeList);
                 
     }
 

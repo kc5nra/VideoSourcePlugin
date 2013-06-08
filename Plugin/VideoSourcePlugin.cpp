@@ -3,10 +3,12 @@
  */
 #include "VideoSourcePlugin.h"
 #include "VideoSource.h"
+#include "VideoSourceConfigDialog.h"
 #include "resource.h"
 
 #include "Localization.h"
 
+#include <windowsx.h>
 
 #define BROWSER_SOURCE_CLASS TEXT("VideoSource")
 
@@ -71,7 +73,7 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
             }
 
             SendMessage(hwndAudioOutputType, CB_SETCURSEL, index, 0);
-
+         
             AudioOutputType &audioOutputType = config->GetAudioOutputTypes()[index];
             auto audioOutputDevices = audioOutputType.GetAudioOutputDevices();
         
@@ -81,7 +83,7 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                 for(auto i = audioOutputDevices.begin(); i < audioOutputDevices.end(); i++) {
                     AudioOutputDevice &audioOutputDevice = *i;
                     SendMessage(hwndAudioOutputDevice, CB_ADDSTRING, 0, (LPARAM)audioOutputDevice.GetName().Array());
-                    if (audioOutputDevice.GetName() == config->audioOutputDevice) {
+                    if (audioOutputDevice.GetLongName() == config->audioOutputDevice) {
                         index = (int)(i - audioOutputDevices.begin());
                     }
                 }
@@ -91,7 +93,6 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                 }
 
                 SendMessage(hwndAudioOutputDevice, CB_SETCURSEL, index, 0);
-                EnableWindow(hwndAudioOutputDevice, TRUE);
             }  else {
                 EnableWindow(hwndAudioOutputDevice, FALSE);
             }
@@ -151,7 +152,7 @@ INT_PTR CALLBACK ConfigureDialogProc(HWND hwnd, UINT message, WPARAM wParam, LPA
                                 for(auto i = audioOutputDevices.begin(); i < audioOutputDevices.end(); i++) {
                                     AudioOutputDevice &audioOutputDevice = *i;
                                     SendMessage(hwndAudioOutputDevice, CB_ADDSTRING, 0, (LPARAM)audioOutputDevice.GetName().Array());
-                                    if (audioOutputDevice.GetName() == config->audioOutputDevice) {
+                                    if (audioOutputDevice.GetLongName() == config->audioOutputDevice) {
                                         index = (int)(i - audioOutputDevices.begin());
                                     }
                                 }
@@ -255,8 +256,10 @@ bool STDCALL ConfigureBrowserSource(XElement *element, bool bCreating)
 
     config->InitializeAudioOutputVectors(VideoSourcePlugin::instance->GetVlc());
 
-    if(DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), API->GetMainWindow(), ConfigureDialogProc, (LPARAM)config) == IDOK)
-    {
+
+    VideoSourceConfigDialog videoSourceConfigDialog(config);
+        
+    if (videoSourceConfigDialog.Show()) {
         config->Save();
         element->SetInt(TEXT("cx"), config->width);
         element->SetInt(TEXT("cy"), config->height);

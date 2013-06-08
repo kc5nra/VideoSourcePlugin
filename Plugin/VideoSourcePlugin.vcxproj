@@ -218,6 +218,7 @@
     <ClCompile Include="AudioOutputStreamHandler.cpp" />
     <ClCompile Include="VideoAudioSource.cpp" />
     <ClCompile Include="VideoSource.cpp" />
+    <ClCompile Include="VideoSourceConfigDialog.cpp" />
     <ClCompile Include="VideoSourcePlugin.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -227,8 +228,10 @@
     <ClInclude Include="VideoSource.h" />
     <ClInclude Include="Localization.h" />
     <ClInclude Include="VideoSourceConfig.h" />
+    <ClInclude Include="VideoSourceConfigDialog.h" />
     <ClInclude Include="VideoSourcePlugin.h" />
     <ClInclude Include="vlc.h" />
+    <ClInclude Include="WindowsHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="VideoSourcePlugin.rc" />

@@ -25,6 +25,12 @@
     <ClInclude Include="vlc.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="VideoSourceConfigDialog.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsHelper.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -48,6 +54,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="AudioOutputStreamHandler.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoSourceConfigDialog.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
