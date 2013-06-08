@@ -23,18 +23,22 @@ VideoSource::VideoSource(XElement *data)
 
 VideoSource::~VideoSource()
 { 
-    if (mediaPlayer) {
-        libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
-        libvlc_media_player_stop(mediaPlayer);
+
+    // media list and media list player
+    libvlc_media_list_player_stop(mediaListPlayer);
+    libvlc_media_list_player_release(mediaListPlayer);
+    libvlc_media_list_release(mediaList);
+
+    // media player
+    libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
+    libvlc_media_player_stop(mediaPlayer);
         
-        if (audioOutputStreamHandler) {
-            delete audioOutputStreamHandler;
-            audioOutputStreamHandler = nullptr;
-        }
 
-        libvlc_media_player_release(mediaPlayer);
-    }
+    delete audioOutputStreamHandler;
+    audioOutputStreamHandler = nullptr;
 
+
+    libvlc_media_player_release(mediaPlayer);
 
     if (pixelData) {
         free(pixelData);
@@ -47,10 +51,9 @@ VideoSource::~VideoSource()
     }
 
     delete config;
-   
-    DeleteCriticalSection(&textureLock);
-
     config = nullptr;
+
+    DeleteCriticalSection(&textureLock);
 }
 
 void *lock(void *data, void **pixelData)
@@ -189,20 +192,55 @@ void VideoSource::UpdateSettings()
 
     if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
-        
     }
 
-    char *utf8PathOrUrl = config->pathOrUrl.CreateUTF8String();
-    if (utf8PathOrUrl) {
-        libvlc_media_t *media = libvlc_media_new_path(vlc, utf8PathOrUrl);
-        libvlc_media_player_set_media(mediaPlayer, media);
-        libvlc_media_release(media);
-        Free(utf8PathOrUrl);
+    if (mediaListPlayer == nullptr) {
+        mediaListPlayer = libvlc_media_list_player_new(vlc);
+        libvlc_media_list_player_set_media_player(mediaListPlayer, mediaPlayer);
+    } else {
+        libvlc_media_list_player_stop(mediaListPlayer);
+    }
+
+    if (mediaList) {
+        libvlc_media_list_lock(mediaList);
+        while(libvlc_media_list_count(mediaList)) {
+            libvlc_media_list_remove_index(mediaList, 0);
+        }
+        libvlc_media_list_unlock(mediaList);
+    } else {
+        mediaList = libvlc_media_list_new(vlc);
+        libvlc_media_list_player_set_media_list(mediaListPlayer, mediaList);
+    }
+
+    char *utf8PathOrUrl;
+    for(unsigned int i = 0; i < config->playlist.Num(); i++) {
+        String &mediaEntry = config->playlist[i];
+        String token = mediaEntry.GetToken(1, L':');
+     
+        // .. Yup.
+        bool isStream = token.Length() >= 2 && token[0] == L'/' && token[1] == L'/';
+        utf8PathOrUrl = config->playlist[i].CreateUTF8String();
+        if (utf8PathOrUrl) {
+            libvlc_media_t *media;
+            if (!isStream) {
+                media = libvlc_media_new_path(vlc, utf8PathOrUrl);
+            } else {
+                media = libvlc_media_new_location(vlc, utf8PathOrUrl);
+            }
+            
+            libvlc_media_list_lock(mediaList);
+            libvlc_media_list_add_media(mediaList, media);
+            libvlc_media_list_unlock(mediaList);
+
+            libvlc_media_release(media);
+            Free(utf8PathOrUrl);
+        }
     }
 
     libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
-    libvlc_audio_set_volume(mediaPlayer, config->volume);
+    libvlc_audio_set_volume(mediaPlayer, config->volume);    
+    
 
     if (!audioOutputStreamHandler) {
         audioOutputStreamHandler = new AudioOutputStreamHandler(vlc, mediaPlayer);
@@ -210,7 +248,7 @@ void VideoSource::UpdateSettings()
 
     audioOutputStreamHandler->SetAudioOutputParameters(config->audioOutputType, config->audioOutputDevice, config->isAudioOutputToStream);
 
-    libvlc_media_player_play(mediaPlayer);
+    libvlc_media_list_player_play(mediaListPlayer);
 }
 
 Vect2 VideoSource::GetSize() const 

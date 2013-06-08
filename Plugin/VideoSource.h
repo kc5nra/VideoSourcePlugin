@@ -26,6 +26,9 @@ private:
     Texture *texture;
     libvlc_instance_t *vlc;
     libvlc_media_player_t *mediaPlayer;
+    libvlc_media_list_player_t *mediaListPlayer;
+
+    libvlc_media_list_t *mediaList;
 
     AudioOutputStreamHandler *audioOutputStreamHandler;
 

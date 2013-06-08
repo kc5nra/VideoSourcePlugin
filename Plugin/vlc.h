@@ -15,7 +15,7 @@
     #pragma include_alias (<vlc/libvlc_vlm.h>               , <vlc21/libvlc_vlm.h>                 )
     #pragma include_alias (<vlc/deprecated.h>               , <vlc21/deprecated.h>                 )
 
-    #include "vlc21\vlc.h"
+    #include "vlc21/vlc.h"
 
     #ifdef _WIN64
         #pragma comment(lib, "libvlc21-x64.lib")
@@ -25,7 +25,7 @@
 
 #else //VLC20
 
-    #include "vlc\vlc.h"
+    #include "vlc/vlc.h"
 
     #ifdef _WIN64
         #pragma comment(lib, "libvlc20-x64.lib")

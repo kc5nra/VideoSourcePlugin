@@ -1,6 +1,10 @@
 #pragma once
 
 #include "OBSApi.h"
+#include "WindowsHelper.h"
+#include "DropTarget.h"
+#include <comdef.h>
+#include <shlobj.h>
 
 class VideoSourceConfig;
 
@@ -19,7 +23,19 @@ public:
     HWND hwndIsAudioOutputToDevice;
     HWND hwndAudioOutputType;
     HWND hwndAudioOutputDevice;
+    HWND hwndMediaFileOrUrl;
+    HWND hwndPlaylist;
+    HWND hwndAddMedia;
+    HWND hwndRemoveMedia;
 
+    DropTarget *playlistDropTarget;
+    DropTargetListener *playlistDropListener;
+
+    // dragging
+
+    HIMAGELIST hDragImageList;
+    bool bDragging;
+    
 public:
     VideoSourceConfigDialog(VideoSourceConfig *config);
     ~VideoSourceConfigDialog();
@@ -29,4 +45,22 @@ public:
 
 public:
     VideoSourceConfig *GetConfig() { return config; }
+    void PlaylistFilesDropped(StringList &files);
+
+};
+
+class PlaylistDropListener : public DropTargetListener
+{
+public:
+private:
+    VideoSourceConfigDialog *config;
+    
+public:
+    PlaylistDropListener(VideoSourceConfigDialog *config) { this->config = config; }
+    
+public:
+    virtual void FilesDropped(StringList &files)
+    {
+        config->PlaylistFilesDropped(files);
+    }
 };

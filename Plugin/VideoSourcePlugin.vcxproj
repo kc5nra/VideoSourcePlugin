@@ -143,7 +143,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>OBSApi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>lib;"$(SolutionDir)..\OBS\OBSApi\x64\Debug";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib;$(SolutionDir)..\OBS\OBSApi\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(SolutionDir)..\OBS\rundir\pdb64\$(TargetName).pdb</ProgramDatabaseFile>
       <StripPrivateSymbols>$(SolutionDir)..\OBS\rundir\pdb64\stripped\$(TargetName).pdb</StripPrivateSymbols>
@@ -216,6 +216,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioOutputStreamHandler.cpp" />
+    <ClCompile Include="DropTarget.cpp" />
     <ClCompile Include="VideoAudioSource.cpp" />
     <ClCompile Include="VideoSource.cpp" />
     <ClCompile Include="VideoSourceConfigDialog.cpp" />
@@ -223,6 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioOutputStreamHandler.h" />
+    <ClInclude Include="DropTarget.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="VideoAudioSource.h" />
     <ClInclude Include="VideoSource.h" />

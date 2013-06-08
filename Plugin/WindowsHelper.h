@@ -1,7 +1,14 @@
 #pragma once
 
 #include "OBSApi.h"
+
 #include <windowsx.h>
+
+#include <shlobj.h>
+#include <commdlg.h>
+
+#define _LOWORD(a) ((WORD)(a))
+#define _HIWORD(a) ((WORD)(((DWORD)(a) >> 16) & 0xFFFF))
 
 #define Button_IsChecked(hwnd) Button_GetCheck(hwnd) ? true : false
 

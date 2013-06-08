@@ -70,7 +70,6 @@ private:
     std::vector<AudioOutputType> audioOutputTypes;
 
 public:
-    String pathOrUrl;
     unsigned int width;
     unsigned int height;
     bool isStretching;
@@ -78,6 +77,8 @@ public:
     bool isAudioOutputToStream;
     String audioOutputType;
     String audioOutputDevice;
+    bool isPlaylistLooping;
+    StringList playlist;
 
 public:
     VideoSourceConfig(XElement *element)
@@ -95,7 +96,6 @@ public:
 
     void Populate()
     {
-        pathOrUrl = TEXT("");
         width = 640;
         height = 480;
         volume = 100;
@@ -103,11 +103,11 @@ public:
         isAudioOutputToStream = true;
         audioOutputType = TEXT("wavemapper");
         audioOutputDevice = TEXT("");
+        isPlaylistLooping = false;
     }
 
     void Reload()
     {
-        pathOrUrl = element->GetString(TEXT("pathOrUrl"));
         width = element->GetInt(TEXT("width"));
         height = element->GetInt(TEXT("height"));
         volume = element->GetInt(TEXT("volume"));
@@ -115,11 +115,13 @@ public:
         isAudioOutputToStream = element->GetInt(TEXT("isAudioOutputToStream")) == 1;
         audioOutputType = element->GetString(TEXT("audioOutputType"));
         audioOutputDevice = element->GetString(TEXT("audioOutputDevice"));
+        isPlaylistLooping = element->GetInt(TEXT("isPlaylistLooping")) == 1;
+        playlist.Clear();
+        element->GetStringList(TEXT("playlist"), playlist);
     }
 
     void Save()
     {
-        element->SetString(TEXT("pathOrUrl"), pathOrUrl);
         element->SetInt(TEXT("width"), width);
         element->SetInt(TEXT("height"), height);
         element->SetInt(TEXT("volume"), volume);
@@ -127,6 +129,8 @@ public:
         element->SetInt(TEXT("isAudioOutputToStream"), isAudioOutputToStream ? 1 : 0);
         element->SetString(TEXT("audioOutputType"), audioOutputType);
         element->SetString(TEXT("audioOutputDevice"), audioOutputDevice);
+        element->SetInt(TEXT("isPlaylistLooping"), isPlaylistLooping ? 1 : 0);
+        element->SetStringList(TEXT("playlist"), playlist);
     }
 
     void InitializeAudioOutputVectors(libvlc_instance_t *vlc) {
@@ -151,6 +155,8 @@ public:
                 char *device = typeListNode->psz_name;
 
                 // fix directx reporting wrong device name
+                // wtf? bad vlc, bad
+                // is there a step I'm missing from resolving aout_directx -> directx?
                 if (audioOutputType.GetName() == "aout_directx") {
                     audioOutputType.SetName(String("directx"));
                     device = "directx";

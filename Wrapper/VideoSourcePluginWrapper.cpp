@@ -4,6 +4,8 @@
 
 #include "VideoSourcePluginWrapper.h"
 
+#include <Ole2.h>
+
 static HINSTANCE hinstDLL = 0;
 static HMODULE hmodVspPlugin;
 static HMODULE hmodLibVlc;
@@ -58,9 +60,13 @@ CTSTR GetPluginDescription()
 
 BOOL CALLBACK DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
+    static bool isOleInitialized = false;
+        
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
         {
+            isOleInitialized = OleInitialize(0) ? true : false;
+
             // order is important!
             hmodLibVlcCore = LoadLibrary(L".\\plugins\\VideoSourcePlugin\\libvlccore.dll");
             hmodLibVlc = LoadLibrary(L".\\plugins\\VideoSourcePlugin\\libvlc.dll");
@@ -80,6 +86,10 @@ BOOL CALLBACK DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         }
     case DLL_PROCESS_DETACH:
         {
+            if (isOleInitialized) {
+                OleUninitialize();
+            }
+
             if (hmodVspPlugin) FreeLibrary(hmodVspPlugin);
             if (hmodLibVlc) FreeLibrary(hmodLibVlc);
             if (hmodLibVlcCore) FreeLibrary(hmodLibVlcCore);

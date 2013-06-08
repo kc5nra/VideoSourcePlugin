@@ -30,5 +30,9 @@ static CTSTR localizationStrings[] = {
     KEY("AudioOutputToDevice"), L"Output audio to device",
     KEY("AudioOutputType"),     L"Audio Module",
     KEY("AudioOutputDevice"),   L"Audio Device",
+    KEY("MediaFileOrUrl"),      L"Enter a file path or a URL pointing to a media object",
+    KEY("Playlist"),            L"Playlist Settings",
+    KEY("PlaylistLoop"),        L"Playlist looping",
+    KEY("PlaylistEditor"),        L"Playlist Editor",
 };
 

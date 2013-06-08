@@ -3,15 +3,12 @@
  */
 #pragma once
 
-
-
 #include "OBSApi.h"
 #include "vlc.h"
 #include "VideoSourceConfig.h"
+#include "Localization.h"
 
 #define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
-
-
 
 class VideoSourcePlugin
 {
