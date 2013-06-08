@@ -1,3 +1,6 @@
+/**
+* John Bradley (jrb@turrettech.com)
+*/
 #include "VideoSourceConfigDialog.h"
 #include "VideoSourcePlugin.h"
 #include "WindowsHelper.h"
@@ -83,6 +86,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     _this->hwndPlaylist                 = GetDlgItem(hwnd, IDC_PLAYLIST); 
     _this->hwndAddMedia                 = GetDlgItem(hwnd, IDC_ADD_MEDIA);
     _this->hwndRemoveMedia              = GetDlgItem(hwnd, IDC_REMOVE_MEDIA);
+    _this->hwndPlaylistLooping          = GetDlgItem(hwnd, IDC_PLAYLIST_LOOP);
 
     _this->playlistDropTarget           = DropTarget::RegisterDropWindow(_this->hwndPlaylist, _this->playlistDropListener);
 
@@ -145,6 +149,8 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     lvc.iImage = 0;        
     lvc.iOrder = 0;        
     ListView_InsertColumn(_this->hwndPlaylist, 0, &lvc);
+
+    Button_SetCheck(_this->hwndPlaylistLooping, config->isPlaylistLooping);
 
     _this->PlaylistFilesDropped(config->playlist);
 
@@ -331,6 +337,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 config->audioOutputDevice = device.GetLongName();
             }
          
+            config->isPlaylistLooping = Button_IsChecked(_this->hwndPlaylistLooping);
             config->playlist.Clear();
 
             int itemCount = ListView_GetItemCount(_this->hwndPlaylist);

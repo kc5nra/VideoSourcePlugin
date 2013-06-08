@@ -1,4 +1,6 @@
-
+/**
+* John Bradley (jrb@turrettech.com)
+*/
 #include "VideoAudioSource.h"
 
 #include "vlc.h"

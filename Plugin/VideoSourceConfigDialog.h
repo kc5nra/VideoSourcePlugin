@@ -1,3 +1,6 @@
+/**
+* John Bradley (jrb@turrettech.com)
+*/
 #pragma once
 
 #include "OBSApi.h"
@@ -25,6 +28,7 @@ public:
     HWND hwndAudioOutputDevice;
     HWND hwndMediaFileOrUrl;
     HWND hwndPlaylist;
+    HWND hwndPlaylistLooping;
     HWND hwndAddMedia;
     HWND hwndRemoveMedia;
 

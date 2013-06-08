@@ -1,3 +1,6 @@
+/**
+* John Bradley (jrb@turrettech.com)
+*/
 #include "AudioOutputStreamHandler.h"
 #include "vlc.h"
 #include "OBSApi.h"
