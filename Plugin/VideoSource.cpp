@@ -81,6 +81,29 @@ void display(void *data, void *id)
 {
 }
 
+
+static void vlcEvent(const libvlc_event_t *e, void *data)
+{
+    VideoSource *_this = reinterpret_cast<VideoSource *>(data);
+    
+    if (e->type == libvlc_MediaPlayerEndReached) {
+        // clear the texture and memory data 
+        // because we can still renders from the video
+        // and OBS that could fetch old data
+        EnterCriticalSection(&_this->textureLock);
+        BYTE *lpData;
+        UINT pitch;
+        if (_this->GetTexture()) {
+            _this->GetTexture()->Map(lpData, pitch);
+            memset(lpData, 0, pitch * _this->GetTexture()->Height());
+            memset(_this->pixelData, 0, pitch * _this->GetTexture()->Height());
+            _this->GetTexture()->Unmap();
+        }
+        LeaveCriticalSection(&_this->textureLock);
+    }
+    
+}
+
 unsigned VideoSource::VideoFormatCallback(
     char *chroma,
     unsigned *width, 
@@ -140,6 +163,7 @@ unsigned VideoSource::VideoFormatCallback(
     return 1;
 }
 
+
 void VideoSource::VideoFormatCleanup()
 {
 }
@@ -192,6 +216,8 @@ void VideoSource::UpdateSettings()
 
     if (mediaPlayer == nullptr) {
         mediaPlayer = libvlc_media_player_new(vlc);
+        libvlc_event_manager_t *em = libvlc_media_player_event_manager(mediaPlayer);
+        libvlc_event_attach(em, libvlc_MediaPlayerEndReached, vlcEvent, this);
     }
 
     if (mediaListPlayer == nullptr) {

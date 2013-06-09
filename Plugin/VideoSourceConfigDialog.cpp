@@ -238,9 +238,20 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 
                 VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
-                StringList media;
-                media.Add(GetEditText(_this->hwndMediaFileOrUrl));
-                _this->PlaylistFilesDropped(media);
+                String newItem(GetEditText(_this->hwndMediaFileOrUrl));
+
+                while(newItem.Length() && newItem[0] == L' ') {
+                    newItem.RemoveChar(0);
+                }
+                
+                //TODO: remove when fix is released
+                newItem.Array()[newItem.Length()] = 0;
+
+                if (newItem.Length()) {
+                    StringList media;
+                    media.Add(String(newItem));
+                    _this->PlaylistFilesDropped(media);
+                }
             }
             break;
         }
