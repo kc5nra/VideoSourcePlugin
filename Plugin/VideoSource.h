@@ -36,6 +36,8 @@ private:
     Vect2 mediaOffset;
     Vect2 mediaSize;
 
+
+
 public:
     VideoSourceConfig *config;
     CRITICAL_SECTION textureLock;
@@ -47,7 +49,10 @@ public:
     unsigned int mediaWidthOffset;
     unsigned int mediaHeightOffset;
 
+    // should only be set inside texture lock
+    bool isRendering;
 
+        
 public:
     Texture *GetTexture() { return texture; }
 

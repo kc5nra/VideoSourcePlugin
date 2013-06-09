@@ -16,7 +16,7 @@
 //
 DropTarget::DropTarget(HWND hwnd, DropTargetListener *dropTargetListener)
 {
-	m_lRefCount  = 1;
+	m_lRefCount  = 0;
 	m_fAllowDrop = false;
     m_hWnd = hwnd;
     m_pDropTargetListener = dropTargetListener;

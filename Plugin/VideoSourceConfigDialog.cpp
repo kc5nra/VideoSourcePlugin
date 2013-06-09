@@ -366,10 +366,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 config->playlist.Add(item.pszText);
             }
 
-            if (_this->playlistDropTarget) {
-                _this->playlistDropTarget->Release();
-                _this->playlistDropTarget = nullptr;
-            }
+            DropTarget::UnregisterDropWindow(hwnd, _this->playlistDropTarget);
 
             EndDialog(hwnd, IDOK);
             break;
@@ -378,10 +375,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         {
             VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
-            if (_this->playlistDropTarget) {
-                _this->playlistDropTarget->Release();
-                _this->playlistDropTarget = nullptr;
-            }
+            DropTarget::UnregisterDropWindow(hwnd, _this->playlistDropTarget);
 
             EndDialog(hwnd, IDCANCEL);
             break;

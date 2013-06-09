@@ -18,7 +18,7 @@ VideoSource::VideoSource(XElement *data)
     
     config = new VideoSourceConfig(data);
     InitializeCriticalSection(&textureLock);
-    UpdateSettings();	
+    UpdateSettings();
 }
 
 VideoSource::~VideoSource()
@@ -99,7 +99,14 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
             memset(_this->pixelData, 0, pitch * _this->GetTexture()->Height());
             _this->GetTexture()->Unmap();
         }
+
+        _this->isRendering = false;
+
         LeaveCriticalSection(&_this->textureLock);
+    } else if (e->type == libvlc_MediaPlayerPlaying) {
+         EnterCriticalSection(&_this->textureLock);
+         _this->isRendering = true;
+         LeaveCriticalSection(&_this->textureLock);
     }
     
 }
@@ -111,15 +118,18 @@ unsigned VideoSource::VideoFormatCallback(
     unsigned *pitches, 
     unsigned *lines)
 {
+    EnterCriticalSection(&textureLock);
+
     if (!texture || texture->Width() != *width || texture->Height() != *height) {
         if (texture) {
             delete texture;
             texture = nullptr;
         }
-
         texture = CreateTexture(*width, *height, GS_BGRA, nullptr, FALSE, FALSE);
-    }   
+    }
     
+    LeaveCriticalSection(&textureLock);
+
     memcpy(chroma, CHROMA, sizeof(CHROMA) - 1);
     *pitches = *width * 4;
     *lines = *height;
@@ -194,7 +204,7 @@ void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
         previousRenderSize.y = size.y;
     }
 
-    if (texture) {
+    if (texture && isRendering) {
         DrawSprite(texture, 0xFFFFFFFF, pos.x + mediaOffset.x, pos.y + mediaOffset.y, pos.x + mediaSize.x, pos.y + mediaSize.y);
     }
     LeaveCriticalSection(&textureLock);
@@ -202,7 +212,10 @@ void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 
 void VideoSource::UpdateSettings()
 {
-
+    
+    EnterCriticalSection(&textureLock);
+    isRendering = false;
+    LeaveCriticalSection(&textureLock);
 
     if (mediaPlayer) {
         libvlc_video_set_callbacks(mediaPlayer, nullptr, nullptr, nullptr, nullptr);
@@ -218,6 +231,7 @@ void VideoSource::UpdateSettings()
         mediaPlayer = libvlc_media_player_new(vlc);
         libvlc_event_manager_t *em = libvlc_media_player_event_manager(mediaPlayer);
         libvlc_event_attach(em, libvlc_MediaPlayerEndReached, vlcEvent, this);
+        libvlc_event_attach(em, libvlc_MediaPlayerPlaying, vlcEvent, this);
     }
 
     if (mediaListPlayer == nullptr) {
@@ -275,6 +289,10 @@ void VideoSource::UpdateSettings()
     }
 
     audioOutputStreamHandler->SetAudioOutputParameters(config->audioOutputType, config->audioOutputDevice, config->isAudioOutputToStream);
+
+    EnterCriticalSection(&textureLock);
+    isRendering = true;
+    LeaveCriticalSection(&textureLock);
 
     libvlc_media_list_player_play(mediaListPlayer);
 }
