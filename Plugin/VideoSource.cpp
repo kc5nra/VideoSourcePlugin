@@ -85,7 +85,7 @@ void display(void *data, void *id)
 static void vlcEvent(const libvlc_event_t *e, void *data)
 {
     VideoSource *_this = reinterpret_cast<VideoSource *>(data);
-    
+        
     if (e->type == libvlc_MediaPlayerEndReached) {
         // clear the texture and memory data 
         // because we can still renders from the video
@@ -100,15 +100,17 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
             _this->GetTexture()->Unmap();
         }
 
-        _this->isRendering = false;
+        if (!_this->config->isPlaylistLooping && !--_this->remainingVideos) {
+            _this->isRendering = false;
+        }
 
         LeaveCriticalSection(&_this->textureLock);
     } else if (e->type == libvlc_MediaPlayerPlaying) {
-         EnterCriticalSection(&_this->textureLock);
-         _this->isRendering = true;
-         LeaveCriticalSection(&_this->textureLock);
+        EnterCriticalSection(&_this->textureLock);
+        _this->isRendering = true;
+        LeaveCriticalSection(&_this->textureLock);
     }
-    
+
 }
 
 unsigned VideoSource::VideoFormatCallback(
@@ -279,6 +281,10 @@ void VideoSource::UpdateSettings()
             libvlc_media_release(media);
             Free(utf8PathOrUrl);
         }
+    }
+
+    if (!config->isPlaylistLooping) {
+        remainingVideos = config->playlist.Num();
     }
 
     libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);

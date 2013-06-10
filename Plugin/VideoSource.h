@@ -25,9 +25,10 @@ private:
     Vect2 videoSize;
     Texture *texture;
     libvlc_instance_t *vlc;
+    
+    // be careful when accessing these
     libvlc_media_player_t *mediaPlayer;
     libvlc_media_list_player_t *mediaListPlayer;
-
     libvlc_media_list_t *mediaList;
 
     AudioOutputStreamHandler *audioOutputStreamHandler;
@@ -51,6 +52,7 @@ public:
 
     // should only be set inside texture lock
     bool isRendering;
+    int remainingVideos;
 
         
 public:
