@@ -7,6 +7,7 @@
 #include "resource.h"
 
 #include <windowsx.h>
+#include "vlc.h"
 
 #define BROWSER_SOURCE_CLASS TEXT("VideoSource")
 
@@ -49,7 +50,7 @@ bool STDCALL ConfigureBrowserSource(XElement *element, bool bCreating)
     delete config;
     return false;
 }
-
+#include <cstdio>
 VideoSourcePlugin::VideoSourcePlugin() {
 	isDynamicLocale = false;
 
@@ -67,9 +68,16 @@ VideoSourcePlugin::VideoSourcePlugin() {
 	
     API->RegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
     
-    char *args[] = { "--no-video-title-show" };
-    vlc = libvlc_new(1, args);
-
+    char *args[] = { 
+        "-I", 
+        "dumy",  
+		"--ignore-config", 
+        "--no-osd",
+        "--disable-screensaver",
+        "--ffmpeg-hw",
+		"--no-video-title-show"
+    };
+    vlc = libvlc_new(7, args);
 }
 
 

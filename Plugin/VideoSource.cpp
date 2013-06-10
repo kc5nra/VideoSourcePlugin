@@ -96,7 +96,7 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
         if (_this->GetTexture()) {
             _this->GetTexture()->Map(lpData, pitch);
             memset(lpData, 0, pitch * _this->GetTexture()->Height());
-            memset(_this->pixelData, 0, pitch * _this->GetTexture()->Height());
+            memset(_this->pixelData, 0, (_this->GetTexture()->Width() * 4) * _this->GetTexture()->Height());
             _this->GetTexture()->Unmap();
         }
 
@@ -118,6 +118,11 @@ unsigned VideoSource::VideoFormatCallback(
     unsigned *pitches, 
     unsigned *lines)
 {
+        
+    memcpy(chroma, CHROMA, sizeof(CHROMA) - 1);
+    *pitches = *width * 4;
+    *lines = *height;
+    
     EnterCriticalSection(&textureLock);
 
     if (!texture || texture->Width() != *width || texture->Height() != *height) {
@@ -128,18 +133,17 @@ unsigned VideoSource::VideoFormatCallback(
         texture = CreateTexture(*width, *height, GS_BGRA, nullptr, FALSE, FALSE);
     }
     
-    LeaveCriticalSection(&textureLock);
-
-    memcpy(chroma, CHROMA, sizeof(CHROMA) - 1);
-    *pitches = *width * 4;
-    *lines = *height;
-    
     if (pixelData) {
         free(pixelData);
         pixelData = nullptr;
     }
     pixelData = calloc((*width) * (*height) * 4, 1);
 
+    LeaveCriticalSection(&textureLock);
+
+
+    
+    
     mediaWidthOffset = 0;
     mediaHeightOffset = 0;
     

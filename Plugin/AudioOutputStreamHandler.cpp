@@ -41,14 +41,15 @@ void AudioOutputStreamHandler::SetAudioOutputParameters(String type, String devi
         
         char *_type = type.CreateUTF8String();
         char *_device = device.CreateUTF8String();
-        libvlc_audio_output_set(mediaPlayer, _type);
-        
-        if (_device) {
-            libvlc_audio_output_device_set(mediaPlayer, _type, _device);
-            Free(_device);
-        }
 
-        Free(_type);    
+        if (_type) {
+            libvlc_audio_output_set(mediaPlayer, _type);
+            if (_device) {
+                libvlc_audio_output_device_set(mediaPlayer, _type, _device);
+                Free(_device);
+            }
+            Free(_type);    
+        }
     }
 }
 

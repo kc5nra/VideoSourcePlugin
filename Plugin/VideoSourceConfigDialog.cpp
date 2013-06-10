@@ -244,10 +244,9 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                     newItem.RemoveChar(0);
                 }
                 
-                //TODO: remove when fix is released
-                newItem.Array()[newItem.Length()] = 0;
-
                 if (newItem.Length()) {
+                    //TODO: remove when fix is released
+                    newItem.Array()[newItem.Length()] = 0;
                     StringList media;
                     media.Add(String(newItem));
                     _this->PlaylistFilesDropped(media);

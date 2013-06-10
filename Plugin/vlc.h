@@ -19,7 +19,7 @@
     #pragma include_alias (<vlc/deprecated.h>               , <vlc21/deprecated.h>                 )
 
     #include "vlc21/vlc.h"
-
+    
     #ifdef _WIN64
         #pragma comment(lib, "libvlc21-x64.lib")
     #else

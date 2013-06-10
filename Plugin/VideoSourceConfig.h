@@ -139,19 +139,35 @@ public:
     void InitializeAudioOutputVectors(libvlc_instance_t *vlc) {
         audioOutputTypes.clear();
         
+        
         libvlc_audio_output_t *typeList = libvlc_audio_output_list_get(vlc);
         libvlc_audio_output_t *typeListNode = typeList;
         while(typeListNode) {
             AudioOutputType audioOutputType(typeListNode->psz_name, typeListNode->psz_description);
 #ifdef VLC21
             if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "mmdevice" || audioOutputType.GetName() == "directsound" || audioOutputType.GetName() == "adummy") {
-                libvlc_audio_output_device_t *deviceList = libvlc_audio_output_device_list_get(vlc, typeListNode->psz_name);
+                char *device = typeListNode->psz_name;
+                // fix directx reporting wrong device name
+                // wtf? bad vlc, bad
+                // is there a step I'm missing from resolving aout_directx -> directx?
+                if (audioOutputType.GetName() == "directsound") {
+                    audioOutputType.SetName(String("aout_directx"));
+                    device = "aout_directx";
+                }
+                 //} else if (audioOutputType.GetName() == "mmdevice") {
+                //    audioOutputType.SetName(String("wasapi"));
+                //    device = "wasapi";
+                //}
+
+                // Why does this not work?
+                libvlc_audio_output_device_t *deviceList = libvlc_audio_output_device_list_get(vlc, device);
                 libvlc_audio_output_device_t *deviceListNode = deviceList;
                 while(deviceListNode) {
                     audioOutputType.AddAudioOutputDevice(AudioOutputDevice(deviceListNode->psz_description, deviceListNode->psz_device));
                     deviceListNode = deviceListNode->p_next;
                 }
                 libvlc_audio_output_device_list_release(deviceList);
+                audioOutputTypes.push_back(audioOutputType);
             }
 #else
             if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "adummy" || audioOutputType.GetName() == "aout_directx") {
