@@ -27,7 +27,7 @@ private:
     libvlc_instance_t *vlc;
     
     // be careful when accessing these
-    libvlc_media_player_t *mediaPlayer;
+    //libvlc_media_player_t *mediaPlayer;
     libvlc_media_list_player_t *mediaListPlayer;
     libvlc_media_list_t *mediaList;
 
@@ -37,7 +37,8 @@ private:
     Vect2 mediaOffset;
     Vect2 mediaSize;
 
-
+public:
+    libvlc_media_player_t *mediaPlayer;
 
 public:
     VideoSourceConfig *config;

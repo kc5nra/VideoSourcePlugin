@@ -132,20 +132,23 @@ unsigned VideoSource::VideoFormatCallback(
             delete texture;
             texture = nullptr;
         }
-        texture = CreateTexture(*width, *height, GS_BGRA, nullptr, FALSE, FALSE);
+        
+        if (pixelData) {
+            free(pixelData);
+            pixelData = nullptr;
+        }
     }
     
-    if (pixelData) {
-        free(pixelData);
-        pixelData = nullptr;
+    if (!texture) {
+        texture = CreateTexture(*width, *height, GS_BGRA, nullptr, FALSE, FALSE);
     }
-    pixelData = calloc((*width) * (*height) * 4, 1);
+
+    if (!pixelData) {
+        pixelData = calloc((*width) * (*height) * 4, 1);
+    }
 
     LeaveCriticalSection(&textureLock);
 
-
-    
-    
     mediaWidthOffset = 0;
     mediaHeightOffset = 0;
     
