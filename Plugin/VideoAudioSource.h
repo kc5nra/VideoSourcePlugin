@@ -4,9 +4,16 @@
 #pragma once
 
 #include "OBSApi.h"
-
+#include <stdint.h>
+#include <vector>
+#include <tuple>
 
 struct libvlc_media_player_t;
+
+struct AudioTimestamp {
+    unsigned int count;
+    int64_t pts;
+};
 
 class VideoAudioSource : public AudioSource
 {
@@ -25,6 +32,7 @@ private:
 
     CRITICAL_SECTION sampleBufferLock;
 
+    std::vector<AudioTimestamp> sampleBufferPts;
     List<BYTE> sampleBuffer;
     List<BYTE> outputBuffer;
 
@@ -42,5 +50,5 @@ protected:
     virtual CTSTR GetDeviceName() const;
 
 public:
-    void VideoAudioSource::PushAudio(const void *lpData, unsigned int size);
+    void VideoAudioSource::PushAudio(const void *lpData, unsigned int size, int64_t pts);
 };

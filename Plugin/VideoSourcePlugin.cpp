@@ -9,6 +9,8 @@
 #include <windowsx.h>
 #include "vlc.h"
 
+#include <cstdio>
+
 #define BROWSER_SOURCE_CLASS TEXT("VideoSource")
 
 HINSTANCE VideoSourcePlugin::hinstDLL = NULL;
@@ -50,7 +52,41 @@ bool STDCALL ConfigureBrowserSource(XElement *element, bool bCreating)
     delete config;
     return false;
 }
-#include <cstdio>
+
+#ifdef VLC2X
+void log_callback(
+    void *data, 
+    int level, 
+    const libvlc_log_t *ctx, 
+    const char *format, 
+    va_list args)
+{
+    wchar_t *levelString;
+    switch (level) 
+    {
+    case LIBVLC_DEBUG:  levelString = TEXT("DEBUG  "); break;
+    case LIBVLC_NOTICE: levelString = TEXT("NOTICE "); break;
+    case LIBVLC_WARNING:levelString = TEXT("WARNING"); break;
+    case LIBVLC_ERROR:  levelString = TEXT("ERROR  "); break;
+    }
+    
+    char message[1024 * 16];
+    memset(message, 0, sizeof(char) * 1024 * 16);
+
+    vsnprintf(message, 1024 * 16, format, args);
+    int messageLength = strlen(message);
+
+    int messageBufferLength = utf8_to_wchar_len(message, messageLength, 0);
+    wchar_t *messageBuffer = static_cast<wchar_t *>(calloc(messageBufferLength + 1, sizeof(wchar_t)));
+    utf8_to_wchar(message, messageLength, messageBuffer, messageBufferLength, 0);
+
+    Log(TEXT("VideoSourcePlugin::%s | %s"), levelString, messageBuffer);
+
+    free(messageBuffer);
+}
+#endif
+
+
 VideoSourcePlugin::VideoSourcePlugin() {
 	isDynamicLocale = false;
 
@@ -69,18 +105,18 @@ VideoSourcePlugin::VideoSourcePlugin() {
     API->RegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
     
     char *args[] = { 
-        "-I", 
-        "dumy",  
-		"--ignore-config", 
         "--no-osd",
         "--disable-screensaver",
         "--ffmpeg-hw",
-		"--no-video-title-show"
+		"--no-video-title-show",
     };
-    vlc = libvlc_new(7, args);
+    
+    vlc = libvlc_new(4, args);
+
+#ifdef VLC2X
+    libvlc_log_set(vlc, log_callback, nullptr);
+#endif
 }
-
-
 
 VideoSourcePlugin::~VideoSourcePlugin() {
 	

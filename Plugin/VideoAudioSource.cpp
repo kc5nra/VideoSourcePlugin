@@ -9,8 +9,6 @@ VideoAudioSource::VideoAudioSource(unsigned int bitsPerSample, unsigned int bloc
 {
     InitializeCriticalSection(&sampleBufferLock);
 
-    API->AddAudioSource(this);
-
     this->bitsPerSample = bitsPerSample;
     this->blockSize = blockSize;
     this->channelMask = channelMask;
@@ -23,6 +21,8 @@ VideoAudioSource::VideoAudioSource(unsigned int bitsPerSample, unsigned int bloc
     outputBuffer.SetSize(sampleSegmentSize);
 
     InitAudioData(false, channels, rate, bitsPerSample, blockSize, channelMask);
+    
+    API->AddAudioSource(this);
 }
 
 VideoAudioSource::~VideoAudioSource()
@@ -37,6 +37,20 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
     {
         EnterCriticalSection(&sampleBufferLock);
 
+        int64_t pts;
+        int samplesProcessed = 0;
+        while(samplesProcessed != sampleFrameCount) {
+            int remaining = sampleFrameCount - samplesProcessed;
+            AudioTimestamp &ts = sampleBufferPts[0];
+            ts.count -= remaining;
+            samplesProcessed += remaining;
+            if (ts.count < 0) {
+                samplesProcessed += ts.count;
+                sampleBufferPts.erase(sampleBufferPts.begin());
+            }
+            pts = ts.pts / 1000;
+        }
+
         mcpy(outputBuffer.Array(), sampleBuffer.Array(), sampleSegmentSize);
         sampleBuffer.RemoveRange(0, sampleSegmentSize);
 
@@ -45,7 +59,16 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
         *buffer = outputBuffer.Array();
         *numFrames = sampleFrameCount;
         *timestamp = API->GetAudioTime();
-
+        
+        // get the difference between vlc internal clock and audio clock
+        int64_t vlcClockDiff = libvlc_delay(*timestamp * 1000);
+        pts += (vlcClockDiff / 1000);
+        
+        // only set if in the future
+        if (pts >= *timestamp) {
+            *timestamp = pts;
+        }
+        
         return true;
     }
 
@@ -56,20 +79,25 @@ void VideoAudioSource::ReleaseBuffer()
 {
 }
 
-
-
 CTSTR VideoAudioSource::GetDeviceName() const
 {
     return NULL;
 }
 
 
-void VideoAudioSource::PushAudio(const void *lpData, unsigned int size)
+void VideoAudioSource::PushAudio(const void *lpData, unsigned int size, int64_t pts)
 {
     if(lpData)
     {
         EnterCriticalSection(&sampleBufferLock);
-        sampleBuffer.AppendArray(static_cast<const BYTE *>(lpData), size * 4);
+        sampleBuffer.AppendArray(static_cast<const BYTE *>(lpData), size * blockSize);
+        
+        AudioTimestamp audioTimestamp;
+        audioTimestamp.count = size * blockSize;
+        audioTimestamp.pts = pts;
+
+        sampleBufferPts.push_back(audioTimestamp);
+
         LeaveCriticalSection(&sampleBufferLock);
     }
 }

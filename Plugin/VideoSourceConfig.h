@@ -144,20 +144,19 @@ public:
         libvlc_audio_output_t *typeListNode = typeList;
         while(typeListNode) {
             AudioOutputType audioOutputType(typeListNode->psz_name, typeListNode->psz_description);
-#ifdef VLC21
+#ifdef VLC2X
             if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "mmdevice" || audioOutputType.GetName() == "directsound" || audioOutputType.GetName() == "adummy") {
                 char *device = typeListNode->psz_name;
                 // fix directx reporting wrong device name
                 // wtf? bad vlc, bad
                 // is there a step I'm missing from resolving aout_directx -> directx?
                 if (audioOutputType.GetName() == "directsound") {
-                    audioOutputType.SetName(String("aout_directx"));
-                    device = "aout_directx";
+                    audioOutputType.SetName(String("directx"));
+                    device = "directx";
+                } else if (audioOutputType.GetName() == "mmdevice") {
+                    audioOutputType.SetName(String("wasapi"));
+                    device = "wasapi";
                 }
-                 //} else if (audioOutputType.GetName() == "mmdevice") {
-                //    audioOutputType.SetName(String("wasapi"));
-                //    device = "wasapi";
-                //}
 
                 // Why does this not work?
                 libvlc_audio_output_device_t *deviceList = libvlc_audio_output_device_list_get(vlc, device);

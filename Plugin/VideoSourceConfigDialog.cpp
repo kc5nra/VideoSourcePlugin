@@ -19,9 +19,9 @@ void Config_OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized
 VideoSourceConfigDialog::VideoSourceConfigDialog(VideoSourceConfig *config)
 {
     this->config = config;
-    
+
     playlistDropListener = new PlaylistDropListener(this);
-    bDragging = false;
+    isDragging = false;
 }
 
 VideoSourceConfigDialog::~VideoSourceConfigDialog()
@@ -52,16 +52,16 @@ void VideoSourceConfigDialog::PlaylistFilesDropped(StringList &files)
 
 INT_PTR CALLBACK Config_DlgProc (HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch(msg)
-	{
+    switch(msg)
+    {
         HANDLE_MSG      (hwndDlg,   WM_INITDIALOG,  Config_OnInitDialog);
         HANDLE_MSG      (hwndDlg,   WM_COMMAND,     Config_OnCommand);
         HANDLE_MSG      (hwndDlg,   WM_LBUTTONUP,   Config_OnLButtonUp);
         HANDLE_MSG      (hwndDlg,   WM_MOUSEMOVE,   Config_OnMouseMove);
         HANDLE_MSG      (hwndDlg,   WM_ACTIVATE,    Config_OnActivate);
 
-        case WM_NOTIFY: return Config_OnNotify(hwndDlg, msg, wParam, lParam);
-        
+    case WM_NOTIFY: return Config_OnNotify(hwndDlg, msg, wParam, lParam);
+
         HANDLE_DEFAULT;	
     }
 }
@@ -71,9 +71,9 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
     VideoSourceConfigDialog *_this = reinterpret_cast<VideoSourceConfigDialog *>(lParam);
     VideoSourceConfig *config = _this->GetConfig();
-        
+
     LocalizeWindow(hwnd);
-    
+
     _this->hwndWidth                    = GetDlgItem(hwnd, IDC_WIDTH);
     _this->hwndHeight                   = GetDlgItem(hwnd, IDC_HEIGHT);
     _this->hwndVolume                   = GetDlgItem(hwnd, IDC_VOLUME);
@@ -112,12 +112,12 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     if (index < 0) {
         index = 0;                
     }
-    
+
     ComboBox_SetCurSel(_this->hwndAudioOutputType, index);
 
     AudioOutputType &audioOutputType = config->GetAudioOutputTypes()[index];
     auto audioOutputDevices = audioOutputType.GetAudioOutputDevices();
-        
+
     index = -1;
 
     if (audioOutputDevices.size()) {
@@ -128,7 +128,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
                 index = (int)(i - audioOutputDevices.begin());
             }
         }
-             
+
         if (index < 0) {
             index = 0;                
         }
@@ -138,7 +138,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
     Button_SetCheck(_this->hwndIsAudioOutputToStream, config->isAudioOutputToStream);
     Button_SetCheck(_this->hwndIsAudioOutputToDevice, !config->isAudioOutputToStream);
-    
+
     LVCOLUMN lvc;
     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT ; 
     lvc.fmt = LVCFMT_LEFT;
@@ -160,7 +160,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         config->isAudioOutputToStream ? _this->hwndIsAudioOutputToStream : _this->hwndIsAudioOutputToDevice,
         BN_CLICKED,
         SendMessage);
-    
+
     return true;
 }
 
@@ -183,7 +183,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
                 EnableWindow(hwndAudioOutputType, !isAudioOutputToStream);
                 EnableWindow(hwndAudioOutputDevice, !isAudioOutputToStream);
-                    
+
                 if (!isAudioOutputToStream) {
                     int index = ComboBox_GetCurSel(_this->hwndAudioOutputType);
                     if (index > 0) {
@@ -192,7 +192,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                     }
                 }
             }
-        break;
+            break;
         }
     case IDC_AUDIO_OUTPUT_TYPE:
         {
@@ -206,7 +206,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
                 AudioOutputType &audioOutputType = _this->GetConfig()->GetAudioOutputTypes()[index];
                 auto audioOutputDevices = audioOutputType.GetAudioOutputDevices();
-        
+
                 index = -1;
 
                 if (audioOutputDevices.size()) {
@@ -235,7 +235,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case IDC_ADD_MEDIA:
         {
             if (codeNotify == BN_CLICKED) {
-                
+
                 VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
                 String newItem(GetEditText(_this->hwndMediaFileOrUrl));
@@ -243,7 +243,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 while(newItem.Length() && newItem[0] == L' ') {
                     newItem.RemoveChar(0);
                 }
-                
+
                 if (newItem.Length()) {
                     //TODO: remove when fix is released
                     newItem.Array()[newItem.Length()] = 0;
@@ -257,7 +257,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case IDC_REMOVE_MEDIA:
         {
             if (codeNotify == BN_CLICKED) {
-                
+
                 VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
                 // Dropped item is selected?
@@ -265,12 +265,12 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 lvi.iSubItem = 0;
                 lvi.mask = LVIF_STATE;
                 lvi.stateMask = LVIS_SELECTED;
-                    
-                int iPos = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
-                while (iPos != -1) {
+
+                int position = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
+                while (position != -1) {
                     // Delete from original position
-                    ListView_DeleteItem(_this->hwndPlaylist, iPos);
-                    iPos = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
+                    ListView_DeleteItem(_this->hwndPlaylist, position);
+                    position = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
                 }
             }
             break;
@@ -279,8 +279,8 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         {
             if (codeNotify == BN_CLICKED) {
                 VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
-                
-                
+
+
                 //lololololol
 
                 TSTR lpFile = (TSTR)Allocate(32*1024*sizeof(TCHAR));
@@ -346,7 +346,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
                 AudioOutputDevice &device = type.GetAudioOutputDevices()[audioOutputDeviceIndex];
                 config->audioOutputDevice = device.GetLongName();
             }
-         
+
             config->isPlaylistLooping = Button_IsChecked(_this->hwndPlaylistLooping);
             config->playlist.Clear();
 
@@ -384,16 +384,15 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags)
 {
-	VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
-    
-    int iPos;
-    int iRet;
-    LVHITTESTINFO lvhti;
-    LVITEM lvi;
-    TCHAR buf[MAX_PATH];
-    
+    VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
+
+    if (!_this->isDragging) {
+        return;
+    }
+
     // End the drag-and-drop process
-    _this->bDragging = FALSE;
+    _this->isDragging = false;
+
     ImageList_DragLeave(_this->hwndPlaylist);
     ImageList_EndDrag();
     ImageList_Destroy(_this->hDragImageList);
@@ -401,6 +400,7 @@ void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags)
     ReleaseCapture();
 
     // Determine the dropped item
+    LVHITTESTINFO lvhti;
     lvhti.pt.x = x;
     lvhti.pt.y = y;
     ClientToScreen(hwnd, &lvhti.pt);
@@ -415,10 +415,11 @@ void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags)
     // Not in an item?
     if (((lvhti.flags & LVHT_ONITEMLABEL) == 0) && 
         ((lvhti.flags & LVHT_ONITEMSTATEICON) == 0)) {
-        return;
+            return;
     }
 
     // Dropped item is selected?
+    LVITEM lvi;
     lvi.iItem = lvhti.iItem;
     lvi.iSubItem = 0;
     lvi.mask = LVIF_STATE;
@@ -432,47 +433,48 @@ void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags)
     int dropIndex = lvi.iItem;
 
     // Rearrange the items
-    iPos = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
-    while (iPos != -1) {
+    int position = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
+    TCHAR buf[MAX_PATH];
+    while (position != -1) {
         // First, copy one item
-        lvi.iItem = iPos;
+        lvi.iItem = position;
         lvi.iSubItem = 0;
         lvi.cchTextMax = MAX_PATH;
         lvi.pszText = buf;
         lvi.stateMask = ~LVIS_SELECTED;
         lvi.mask = LVIF_STATE | LVIF_IMAGE 
-                    | LVIF_INDENT | LVIF_PARAM | LVIF_TEXT;
-        
+            | LVIF_INDENT | LVIF_PARAM | LVIF_TEXT;
+
         ListView_GetItem(_this->hwndPlaylist, &lvi);
-        
+
         lvi.iItem = lvhti.iItem;
-        if (lvhti.iItem < iPos) {
+        if (lvhti.iItem < position) {
             lvi.iItem = lvhti.iItem;
         } else {
             lvi.iItem = lvhti.iItem + 1;
         }
 
         // Insert the main item
-        iRet = ListView_InsertItem(_this->hwndPlaylist, &lvi);
-        if (lvi.iItem < iPos) {
+        int insertedItemIdex = ListView_InsertItem(_this->hwndPlaylist, &lvi);
+        if (lvi.iItem < position) {
             lvhti.iItem++;
         }
-        if (iRet <= iPos) {
-            iPos++;
+        if (insertedItemIdex <= position) {
+            position++;
         }
 
         // Delete from original position
-        ListView_DeleteItem(_this->hwndPlaylist, iPos);
-        iPos = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
+        ListView_DeleteItem(_this->hwndPlaylist, position);
+        position = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
     }
 
 }
 
 void Config_OnMouseMove(HWND hwnd, int x, int y, UINT keyFlags)
 {
-	VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
+    VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
-    if (!_this->bDragging) {
+    if (!_this->isDragging) {
         return;
     }
 
@@ -486,64 +488,60 @@ void Config_OnMouseMove(HWND hwnd, int x, int y, UINT keyFlags)
 
 INT_PTR CALLBACK Config_OnNotify(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    POINT p;
-    POINT pt;
-    int iHeight;
-    HIMAGELIST hOneImageList;
-    HIMAGELIST hTempImageList;
-    IMAGEINFO           imf;
-
-    BOOL bFirst;
-
-    int iPos;
-
     switch (((LPNMHDR)lParam)->code)
     {
-        case LVN_BEGINDRAG:
+    case LVN_BEGINDRAG:
         {
             VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
             // You can set your customized cursor here
-
+            POINT p;
             p.x = 8;
             p.y = 8;
 
             // Ok, now we create a drag-image for all selected items
-            bFirst = TRUE;
-            iPos = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
-            while (iPos != -1) {
-                if (bFirst) {
+            bool isFirst = true;
+            int position = ListView_GetNextItem(_this->hwndPlaylist, -1, LVNI_SELECTED);
+            int totalHeight;
+
+            IMAGEINFO imf;
+            HIMAGELIST hOneImageList;
+            HIMAGELIST hTempImageList;
+
+            while (position != -1) {
+                if (isFirst) {
                     // For the first selected item,
                     // we simply create a single-line drag image
-                    _this->hDragImageList = ListView_CreateDragImage(_this->hwndPlaylist, iPos, &p);
+                    _this->hDragImageList = ListView_CreateDragImage(_this->hwndPlaylist, position, &p);
                     ImageList_GetImageInfo(_this->hDragImageList, 0, &imf);
-                    iHeight = imf.rcImage.bottom;
-                    bFirst = FALSE;
-                }else {
+                    totalHeight = imf.rcImage.bottom;
+                    isFirst = false;
+                } else {
                     // For the rest selected items,
                     // we create a single-line drag image, then
                     // append it to the bottom of the complete drag image
-                    hOneImageList = ListView_CreateDragImage(_this->hwndPlaylist, iPos, &p);
+                    hOneImageList = ListView_CreateDragImage(_this->hwndPlaylist, position, &p);
                     hTempImageList = ImageList_Merge(_this->hDragImageList, 
-                                        0, hOneImageList, 0, 0, iHeight);
+                        0, hOneImageList, 0, 0, totalHeight);
                     ImageList_Destroy(_this->hDragImageList);
                     ImageList_Destroy(hOneImageList);
                     _this->hDragImageList = hTempImageList;
                     ImageList_GetImageInfo(_this->hDragImageList, 0, &imf);
-                    iHeight = imf.rcImage.bottom;
+                    totalHeight = imf.rcImage.bottom;
                 }
-                iPos = ListView_GetNextItem(_this->hwndPlaylist, iPos, LVNI_SELECTED);
+                position = ListView_GetNextItem(_this->hwndPlaylist, position, LVNI_SELECTED);
             }
 
             // Now we can initialize then start the drag action
             ImageList_BeginDrag(_this->hDragImageList, 0, 0, 0);
 
+            POINT pt;
             pt = ((NM_LISTVIEW*) ((LPNMHDR)lParam))->ptAction;
             ClientToScreen(_this->hwndPlaylist, &pt);
 
             ImageList_DragEnter(GetDesktopWindow(), pt.x, pt.y);
 
-            _this->bDragging = TRUE;
+            _this->isDragging = true;
 
             // Don't forget to capture the mouse
             SetCapture(hwnd);
@@ -559,8 +557,8 @@ void Config_OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized
 {
     VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
     if (state == WA_INACTIVE) {
-        if (_this && _this->bDragging) {
-            _this->bDragging = FALSE;
+        if (_this && _this->isDragging) {
+            _this->isDragging = false;
             ImageList_DragLeave(_this->hwndPlaylist);
             ImageList_EndDrag();
             ImageList_Destroy(_this->hDragImageList);

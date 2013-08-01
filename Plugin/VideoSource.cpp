@@ -293,7 +293,7 @@ void VideoSource::UpdateSettings()
     libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
     libvlc_audio_set_volume(mediaPlayer, config->volume);    
-
+    
     libvlc_media_list_player_set_playback_mode(mediaListPlayer, config->isPlaylistLooping ? libvlc_playback_mode_loop : libvlc_playback_mode_default);
     
 

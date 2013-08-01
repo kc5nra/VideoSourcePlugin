@@ -38,7 +38,7 @@ public:
     // dragging
 
     HIMAGELIST hDragImageList;
-    bool bDragging;
+    bool isDragging;
     
 public:
     VideoSourceConfigDialog(VideoSourceConfig *config);

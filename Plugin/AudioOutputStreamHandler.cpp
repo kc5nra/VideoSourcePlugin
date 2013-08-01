@@ -43,7 +43,7 @@ void AudioOutputStreamHandler::SetAudioOutputParameters(String type, String devi
         char *_device = device.CreateUTF8String();
 
         if (_type) {
-            libvlc_audio_output_set(mediaPlayer, _type);
+            int i = libvlc_audio_output_set(mediaPlayer, _type);
             if (_device) {
                 libvlc_audio_output_device_set(mediaPlayer, _type, _device);
                 Free(_device);
@@ -66,7 +66,10 @@ int AudioOutputStreamHandler::AudioSetupCallback(char *format, unsigned int *rat
         unsigned int bitsPerSample = 16;
         unsigned int blockSize = 4;
         unsigned int channelMask = 0;
-    
+
+        *channels = 2;
+        *rate = 44100;
+
         audioSource = new VideoAudioSource(bitsPerSample, blockSize, channelMask, *rate, *channels);
 
         return 0;
@@ -81,6 +84,6 @@ void AudioOutputStreamHandler::AudioCleanupCallback()
 }
 
 void AudioOutputStreamHandler::AudioPlayCallback(const void *samples, unsigned int count, int64_t pts)
-{  
-    audioSource->PushAudio(samples, count);
+{
+    audioSource->PushAudio(samples, count, pts);
 }
