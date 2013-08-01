@@ -29,10 +29,10 @@ Wrapper/x64/Release
 Wrapper/win32/Debug
 Wrapper/win32/Release
 
-Release-20-x86
-Release-20-x64
-Release-2X-x86
-Release-2X-x64
+Release-VLC20-x86
+Release-VLC20-x64
+Release-VLC2X-x86
+Release-VLC2X-x64
 
 ipch
 
