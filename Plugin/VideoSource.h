@@ -27,7 +27,6 @@ private:
     libvlc_instance_t *vlc;
     
     // be careful when accessing these
-    //libvlc_media_player_t *mediaPlayer;
     libvlc_media_list_player_t *mediaListPlayer;
     libvlc_media_list_t *mediaList;
 
@@ -36,8 +35,10 @@ private:
     Vect2 previousRenderSize;
     Vect2 mediaOffset;
     Vect2 mediaSize;
-
+    
 public:
+    bool isRenderingWithoutRef;
+    volatile bool isInScene;
     libvlc_media_player_t *mediaPlayer;
 
 public:
@@ -58,12 +59,16 @@ public:
         
 public:
     Texture *GetTexture() { return texture; }
+    void ClearTexture();
 
 public:
     // ImageSource
     void Tick(float fSeconds);
     void Render(const Vect2 &pos, const Vect2 &size);
 
+    void GlobalSourceLeaveScene();
+    void GlobalSourceEnterScene();
+    
     void ChangeScene();
     void UpdateSettings();
     Vect2 GetSize() const;

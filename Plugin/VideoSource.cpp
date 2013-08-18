@@ -11,11 +11,15 @@ VideoSource::VideoSource(XElement *data)
 {
 	Log(TEXT("Using Video Source"));
 
+    
     vlc = VideoSourcePlugin::instance->GetVlc();
     mediaPlayer = nullptr;
     pixelData = nullptr;
     audioOutputStreamHandler = nullptr;
-    
+    isInScene = true;
+    //globalSourceRefCount = 1;
+    //isRenderingWithoutRef = false;
+
     config = new VideoSourceConfig(data);
     InitializeCriticalSection(&textureLock);
     UpdateSettings();
@@ -58,21 +62,23 @@ VideoSource::~VideoSource()
 
 void *lock(void *data, void **pixelData)
 {
-    VideoSource *context = static_cast<VideoSource *>(data);
+    VideoSource *_this = static_cast<VideoSource *>(data);
 
-    *pixelData = context->pixelData;
+    *pixelData = _this->pixelData;
 
-    EnterCriticalSection(&context->textureLock);
+    EnterCriticalSection(&_this->textureLock);
     return NULL;
 }
 
 void unlock(void *data, void *id, void *const *pixelData)
 {
-    VideoSource *context = static_cast<VideoSource *>(data);
+    VideoSource *_this = static_cast<VideoSource *>(data);
 
-    context->GetTexture()->SetImage(*pixelData, GS_IMAGEFORMAT_BGRA, context->GetTexture()->Width() * 4);
+    if (_this->isInScene) {
+        _this->GetTexture()->SetImage(*pixelData, GS_IMAGEFORMAT_BGRA, _this->GetTexture()->Width() * 4);
+    }
 
-    LeaveCriticalSection(&context->textureLock);
+    LeaveCriticalSection(&_this->textureLock);
     
     assert(id == NULL); /* picture identifier, not needed here */
 }
@@ -80,7 +86,6 @@ void unlock(void *data, void *id, void *const *pixelData)
 void display(void *data, void *id)
 {
 }
-
 
 static void vlcEvent(const libvlc_event_t *e, void *data)
 {
@@ -91,14 +96,8 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
         // because we can still renders from the video
         // and OBS that could fetch old data
         EnterCriticalSection(&_this->textureLock);
-        BYTE *lpData;
-        UINT pitch;
-        if (_this->GetTexture()) {
-            _this->GetTexture()->Map(lpData, pitch);
-            memset(lpData, 0, pitch * _this->GetTexture()->Height());
-            memset(_this->pixelData, 0, (_this->GetTexture()->Width() * 4) * _this->GetTexture()->Height());
-            _this->GetTexture()->Unmap();
-        }
+        
+        _this->ClearTexture();
 
         if (!_this->config->isPlaylistLooping && !--_this->remainingVideos) {
             _this->isRendering = false;
@@ -192,6 +191,29 @@ void VideoSource::Tick(float fSeconds)
 {
 }
 
+void VideoSource::GlobalSourceEnterScene()
+{
+    isInScene = true;
+}
+
+void VideoSource::GlobalSourceLeaveScene()
+{
+    isInScene = false;
+}
+
+// you must lock the texture before you call this
+void VideoSource::ClearTexture()
+{
+    BYTE *lpData;
+    UINT pitch;
+    if (texture) {
+        texture->Map(lpData, pitch);
+        memset(lpData, 0, pitch * texture->Height());
+        memset(pixelData, 0, (texture->Width() * 4) * texture->Height());
+        texture->Unmap();
+    }
+}
+
 void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 {
     EnterCriticalSection(&textureLock);
@@ -216,6 +238,7 @@ void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
     if (texture && isRendering) {
         DrawSprite(texture, 0xFFFFFFFF, pos.x + mediaOffset.x, pos.y + mediaOffset.y, pos.x + mediaSize.x, pos.y + mediaSize.y);
     }
+
     LeaveCriticalSection(&textureLock);
 }
 
