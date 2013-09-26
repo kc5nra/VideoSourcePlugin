@@ -35,6 +35,8 @@ private:
     Vect2 previousRenderSize;
     Vect2 mediaOffset;
     Vect2 mediaSize;
+
+    bool hasSetVolume;
     
 public:
     bool isRenderingWithoutRef;

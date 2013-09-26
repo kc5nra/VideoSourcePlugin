@@ -39,14 +39,16 @@ class AudioOutputType
 
 private:
     String name;
+    String deviceSetName;
     String description;
     std::vector<AudioOutputDevice> audioOutputDevices;
     bool isEnabled;
 
 public:
-    AudioOutputType(String name, String description) 
+    AudioOutputType(String name, String deviceSetName, String description) 
     {
         this->name = name;
+        this->deviceSetName = deviceSetName;
         this->description = description;
     }
     
@@ -59,6 +61,8 @@ public:
 public:
     void SetName(String &name) { this->name = name; }
     String &GetName() { return name; }
+    void SetDeviceSetName(String &deviceSetName) { this->deviceSetName = deviceSetName; }
+    String &GetDeviceSetName() { return deviceSetName; }
     String &GetDescription() { return description; }
 
     std::vector<AudioOutputDevice> &GetAudioOutputDevices() { return audioOutputDevices; }
@@ -79,6 +83,7 @@ public:
     unsigned int volume;
     bool isAudioOutputToStream;
     String audioOutputType;
+    String audioOutputTypeDevice;
     String audioOutputDevice;
     bool isPlaylistLooping;
     StringList playlist;
@@ -105,6 +110,7 @@ public:
         isStretching = false;
         isAudioOutputToStream = true;
         audioOutputType = TEXT("wavemapper");
+        audioOutputTypeDevice = TEXT("wavemapper");
         audioOutputDevice = TEXT("");
         isPlaylistLooping = false;
     }
@@ -117,6 +123,7 @@ public:
         isStretching = element->GetInt(TEXT("isStretching")) == 1;
         isAudioOutputToStream = element->GetInt(TEXT("isAudioOutputToStream")) == 1;
         audioOutputType = element->GetString(TEXT("audioOutputType"));
+        audioOutputTypeDevice = element->GetString(TEXT("audioOutputTypeDevice"));
         audioOutputDevice = element->GetString(TEXT("audioOutputDevice"));
         isPlaylistLooping = element->GetInt(TEXT("isPlaylistLooping")) == 1;
         playlist.Clear();
@@ -131,6 +138,7 @@ public:
         element->SetInt(TEXT("isStretching"), isStretching ? 1 : 0);
         element->SetInt(TEXT("isAudioOutputToStream"), isAudioOutputToStream ? 1 : 0);
         element->SetString(TEXT("audioOutputType"), audioOutputType);
+        element->SetString(TEXT("audioOutputTypeDevice"), audioOutputTypeDevice);
         element->SetString(TEXT("audioOutputDevice"), audioOutputDevice);
         element->SetInt(TEXT("isPlaylistLooping"), isPlaylistLooping ? 1 : 0);
         element->SetStringList(TEXT("playlist"), playlist);
@@ -143,19 +151,16 @@ public:
         libvlc_audio_output_t *typeList = libvlc_audio_output_list_get(vlc);
         libvlc_audio_output_t *typeListNode = typeList;
         while(typeListNode) {
-            AudioOutputType audioOutputType(typeListNode->psz_name, typeListNode->psz_description);
+            AudioOutputType audioOutputType(typeListNode->psz_name, typeListNode->psz_name, typeListNode->psz_description);
 #ifdef VLC2X
-            if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "mmdevice" || audioOutputType.GetName() == "directsound" || audioOutputType.GetName() == "adummy") {
+            if (audioOutputType.GetName() == "waveout" || audioOutputType.GetName() == "directsound" || audioOutputType.GetName() == "adummy") {
                 char *device = typeListNode->psz_name;
                 // fix directx reporting wrong device name
                 // wtf? bad vlc, bad
                 // is there a step I'm missing from resolving aout_directx -> directx?
                 if (audioOutputType.GetName() == "directsound") {
-                    audioOutputType.SetName(String("directx"));
+                    audioOutputType.SetDeviceSetName(String("directx"));
                     device = "directx";
-                } else if (audioOutputType.GetName() == "mmdevice") {
-                    audioOutputType.SetName(String("wasapi"));
-                    device = "wasapi";
                 }
 
                 // Why does this not work?

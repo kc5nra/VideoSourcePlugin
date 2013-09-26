@@ -5,6 +5,11 @@
 #include "vlc.h"
 #include "OBSApi.h"
 
+void callback(void *data, float volume, bool mute)
+{
+    AudioOutputStreamHandler *a = reinterpret_cast<AudioOutputStreamHandler *>(data);
+}
+
 AudioOutputStreamHandler::AudioOutputStreamHandler(
     libvlc_instance_t *vlc, 
     libvlc_media_player_t *mediaPlayer)
@@ -30,7 +35,7 @@ AudioOutputStreamHandler::~AudioOutputStreamHandler()
     }
 }
 
-void AudioOutputStreamHandler::SetAudioOutputParameters(String type, String device, bool isAudioOutputToStream)
+void AudioOutputStreamHandler::SetOutputParameters(String type, String typeDevice, String device, bool isAudioOutputToStream)
 {
     this->isAudioOutputToStream = isAudioOutputToStream;
 
@@ -40,21 +45,31 @@ void AudioOutputStreamHandler::SetAudioOutputParameters(String type, String devi
         auto *node = libvlc_audio_output_list_get(vlc);
         
         char *_type = type.CreateUTF8String();
+        char *_typeDevice = typeDevice.CreateUTF8String();
         char *_device = device.CreateUTF8String();
 
         if (_type) {
             int i = libvlc_audio_output_set(mediaPlayer, _type);
             if (_device) {
-                libvlc_audio_output_device_set(mediaPlayer, _type, _device);
-                Free(_device);
+                libvlc_audio_output_device_set(mediaPlayer, _typeDevice, _device);
             }
-            Free(_type);    
+        }
+
+        if (_type != nullptr) {
+            Free(_type);
+        }
+        if (_typeDevice != nullptr) {
+            Free(_typeDevice);
+        }
+        if (_device != nullptr) {
+            Free(_device);
         }
     }
 }
 
 int AudioOutputStreamHandler::AudioSetupCallback(char *format, unsigned int *rate, unsigned int *channels)
 {
+   
     if (audioSource) {
         delete audioSource;
         audioSource = nullptr;

@@ -19,13 +19,16 @@ private:
     VideoAudioSource *audioSource;
     bool isAudioOutputToStream; 
 
+    int volume;
+
 public:
 
     AudioOutputStreamHandler::AudioOutputStreamHandler(libvlc_instance_t *vlc, libvlc_media_player_t *mediaPlayer);
     ~AudioOutputStreamHandler();
 
 public:
-    void SetAudioOutputParameters(String type, String device, bool isAudioOutputToStream);
+    void SetOutputParameters(String type, String typeDevice, String device, bool isAudioOutputToStream);
+    void SetVolume(int volume) { this->volume = volume; }
 
 public: 
     // vlc setup callbacks

@@ -342,6 +342,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
             AudioOutputType &type = config->GetAudioOutputTypes()[audioOutputTypeIndex];
             config->audioOutputType = type.GetName();
+            config->audioOutputTypeDevice = type.GetDeviceSetName();
             if (audioOutputDeviceIndex >= 0) {
                 AudioOutputDevice &device = type.GetAudioOutputDevices()[audioOutputDeviceIndex];
                 config->audioOutputDevice = device.GetLongName();

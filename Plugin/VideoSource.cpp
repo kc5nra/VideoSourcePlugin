@@ -216,8 +216,13 @@ void VideoSource::ClearTexture()
 
 void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 {
+    if (!hasSetVolume)
+    {
+        hasSetVolume |= libvlc_audio_set_volume(mediaPlayer, config->volume) == 0;
+    }
+
     EnterCriticalSection(&textureLock);
-    
+
     if (previousRenderSize != size) {
         mediaOffset.x = (float)mediaWidthOffset;
         mediaOffset.y = (float)mediaHeightOffset;
@@ -256,6 +261,8 @@ void VideoSource::UpdateSettings()
     
     config->Reload();
 
+    hasSetVolume = false;
+
     videoSize.x = float(config->width);
     videoSize.y = float(config->height);
 
@@ -283,6 +290,8 @@ void VideoSource::UpdateSettings()
         mediaList = libvlc_media_list_new(vlc);
         libvlc_media_list_player_set_media_list(mediaListPlayer, mediaList);
     }
+
+    
 
     char *utf8PathOrUrl;
     for(unsigned int i = 0; i < config->playlist.Num(); i++) {
@@ -315,8 +324,7 @@ void VideoSource::UpdateSettings()
 
     libvlc_video_set_callbacks(mediaPlayer, lock, unlock, display, this);
     libvlc_video_set_format_callbacks(mediaPlayer, videoFormatProxy, videoCleanupProxy);
-    libvlc_audio_set_volume(mediaPlayer, config->volume);    
-    
+
     libvlc_media_list_player_set_playback_mode(mediaListPlayer, config->isPlaylistLooping ? libvlc_playback_mode_loop : libvlc_playback_mode_default);
     
 
@@ -324,13 +332,24 @@ void VideoSource::UpdateSettings()
         audioOutputStreamHandler = new AudioOutputStreamHandler(vlc, mediaPlayer);
     }
 
-    audioOutputStreamHandler->SetAudioOutputParameters(config->audioOutputType, config->audioOutputDevice, config->isAudioOutputToStream);
-
+    audioOutputStreamHandler->SetOutputParameters(
+        config->audioOutputType, 
+        config->audioOutputTypeDevice,
+        config->audioOutputDevice, 
+        config->isAudioOutputToStream);
+    
+    audioOutputStreamHandler->SetVolume(config->volume);
+    
+    // set (possibly in vane) the volume.  If it doesn't work it will try later until it works
+    // vlc... que pasa amigo
+    hasSetVolume = libvlc_audio_set_volume(mediaPlayer, config->volume) == 0;
+    
     EnterCriticalSection(&textureLock);
     isRendering = true;
     LeaveCriticalSection(&textureLock);
 
     libvlc_media_list_player_play(mediaListPlayer);
+    
 }
 
 Vect2 VideoSource::GetSize() const 

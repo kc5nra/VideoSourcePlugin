@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#define VLC2X 
+
 #ifdef VLC2X
     
     #pragma include_alias (<vlc/vlc.h>                      , <vlc2x/vlc.h>                        )
