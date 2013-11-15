@@ -74,6 +74,11 @@ void unlock(void *data, void *id, void *const *pixelData)
 {
     VideoSource *_this = static_cast<VideoSource *>(data);
 
+    if (!_this->hasSetVolume)
+    {
+        _this->hasSetVolume |= libvlc_audio_set_volume(_this->mediaPlayer, _this->config->volume) == 0;
+    }
+
     if (_this->isInScene) {
         _this->GetTexture()->SetImage(*pixelData, GS_IMAGEFORMAT_BGRA, _this->GetTexture()->Width() * 4);
     }
@@ -97,10 +102,9 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
         // and OBS that could fetch old data
         EnterCriticalSection(&_this->textureLock);
         
-        _this->ClearTexture();
-
         if (!_this->config->isPlaylistLooping && !--_this->remainingVideos) {
             _this->isRendering = false;
+            _this->ClearTexture();
         }
 
         LeaveCriticalSection(&_this->textureLock);
@@ -216,11 +220,6 @@ void VideoSource::ClearTexture()
 
 void VideoSource::Render(const Vect2 &pos, const Vect2 &size)
 {
-    if (!hasSetVolume)
-    {
-        hasSetVolume |= libvlc_audio_set_volume(mediaPlayer, config->volume) == 0;
-    }
-
     EnterCriticalSection(&textureLock);
 
     if (previousRenderSize != size) {

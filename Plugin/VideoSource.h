@@ -36,12 +36,13 @@ private:
     Vect2 mediaOffset;
     Vect2 mediaSize;
 
-    bool hasSetVolume;
+    
     
 public:
+    libvlc_media_player_t *mediaPlayer;
     bool isRenderingWithoutRef;
     volatile bool isInScene;
-    libvlc_media_player_t *mediaPlayer;
+    bool hasSetVolume;
 
 public:
     VideoSourceConfig *config;
