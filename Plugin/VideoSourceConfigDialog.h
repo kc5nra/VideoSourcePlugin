@@ -31,6 +31,7 @@ public:
     HWND hwndPlaylistLooping;
     HWND hwndAddMedia;
     HWND hwndRemoveMedia;
+	HWND hwndDeinterlacing;
 
     DropTarget *playlistDropTarget;
     DropTargetListener *playlistDropListener;

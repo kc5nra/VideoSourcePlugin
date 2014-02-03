@@ -87,6 +87,7 @@ public:
     String audioOutputDevice;
     bool isPlaylistLooping;
     StringList playlist;
+	String deinterlacing;
 
 public:
     VideoSourceConfig(XElement *element)
@@ -113,6 +114,7 @@ public:
         audioOutputTypeDevice = TEXT("wavemapper");
         audioOutputDevice = TEXT("");
         isPlaylistLooping = false;
+		deinterlacing = TEXT("none");
     }
 
     void Reload()
@@ -128,6 +130,7 @@ public:
         isPlaylistLooping = element->GetInt(TEXT("isPlaylistLooping")) == 1;
         playlist.Clear();
         element->GetStringList(TEXT("playlist"), playlist);
+		deinterlacing = element->GetString(TEXT("deinterlacing"));
     }
 
     void Save()
@@ -142,6 +145,7 @@ public:
         element->SetString(TEXT("audioOutputDevice"), audioOutputDevice);
         element->SetInt(TEXT("isPlaylistLooping"), isPlaylistLooping ? 1 : 0);
         element->SetStringList(TEXT("playlist"), playlist);
+		element->SetString(TEXT("deinterlacing"), deinterlacing);
     }
 
     void InitializeAudioOutputVectors(libvlc_instance_t *vlc) {
