@@ -27,7 +27,7 @@ FONT 8, "Ms Shell Dlg"
     RTEXT           "Plugins.VideoSource.VideoHeight", IDC_STATIC, 4294967283, 39, 97, 8, SS_RIGHT
     DEFPUSHBUTTON   "OK", IDOK, 259, 324, 50, 14
     AUTOCHECKBOX    "Plugins.VideoSource.StretchImage", IDC_STRETCH, 4294967284, 53, 110, 8, 0, WS_EX_RIGHT
-	RTEXT           "Plugins.VideoSource.Deinterlacing", IDC_STATIC, 4294967270, 68, 110, 8, SS_RIGHT
+    RTEXT           "Plugins.VideoSource.Deinterlacing", IDC_STATIC, 4294967270, 68, 110, 8, SS_RIGHT
     COMBOBOX        IDC_DEINTERLACING, 89, 66, 73, 12, CBS_DROPDOWNLIST | CBS_HASSTRINGS
     CONTROL         "", IDC_VOLUME, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 200, 33, 142, 15
     LTEXT           "Plugins.VideoSource.Volume", IDC_STATIC, 200, 20, 92, 8, SS_LEFT
