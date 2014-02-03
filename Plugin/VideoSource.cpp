@@ -326,13 +326,6 @@ void VideoSource::UpdateSettings()
 
     libvlc_media_list_player_set_playback_mode(mediaListPlayer, config->isPlaylistLooping ? libvlc_playback_mode_loop : libvlc_playback_mode_default);
     
-	if(config->deinterlacing == TEXT("none")) {
-		libvlc_video_set_deinterlace(mediaPlayer,NULL);
-	}
-	else {
-		libvlc_video_set_deinterlace(mediaPlayer,config->deinterlacing.CreateUTF8String());
-	}
-	
 
     if (!audioOutputStreamHandler) {
         audioOutputStreamHandler = new AudioOutputStreamHandler(vlc, mediaPlayer);
@@ -353,8 +346,6 @@ void VideoSource::UpdateSettings()
     EnterCriticalSection(&textureLock);
     isRendering = true;
     LeaveCriticalSection(&textureLock);
-
-	
 
     libvlc_media_list_player_play(mediaListPlayer);
     

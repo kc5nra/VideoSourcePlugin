@@ -34,6 +34,5 @@ static CTSTR localizationStrings[] = {
     KEY("Playlist"),            L"Playlist Settings",
     KEY("PlaylistLoop"),        L"Playlist looping",
     KEY("PlaylistEditor"),        L"Playlist Editor",
-	KEY("Deinterlacing"),       L"Deinterlacing:",
 };
 

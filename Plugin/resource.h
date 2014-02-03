@@ -1,10 +1,13 @@
+/**
+* John Bradley (jrb@turrettech.com)
+*/
+
 #ifndef IDC_STATIC
 #define IDC_STATIC (-1)
 #endif
 
 #define IDD_VIDEOCONFIG                         102
 #define IDC_STRETCH                             1001
-#define IDC_DEINTERLACING                       1002
 #define IDC_MEDIA_FILE_OR_URL                   1004
 #define IDC_WIDTH                               1007
 #define IDC_HEIGHT                              1008
