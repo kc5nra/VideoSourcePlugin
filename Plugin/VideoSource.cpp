@@ -330,7 +330,9 @@ void VideoSource::UpdateSettings()
         libvlc_video_set_deinterlace(mediaPlayer,NULL);
     }
     else {
-        libvlc_video_set_deinterlace(mediaPlayer,config->deinterlacing.CreateUTF8String());
+        LPSTR deinterlacingUTF8 = config->deinterlacing.CreateUTF8String();
+        libvlc_video_set_deinterlace(mediaPlayer, deinterlacingUTF8);
+        Free(deinterlacingUTF8);
     }
 
     if (!audioOutputStreamHandler) {

@@ -88,27 +88,27 @@ void log_callback(
 
 
 VideoSourcePlugin::VideoSourcePlugin() {
-	isDynamicLocale = false;
+    isDynamicLocale = false;
 
-	if (!locale->HasLookup(KEY("PluginName"))) {
-		isDynamicLocale = true;
-		int localizationStringCount = sizeof(localizationStrings) / sizeof(CTSTR);
-		Log(TEXT("Video Source Plugin strings not found, dynamically loading %d strings"), sizeof(localizationStrings) / sizeof(CTSTR));
-		for(int i = 0; i < localizationStringCount; i += 2) {
-			locale->AddLookupString(localizationStrings[i], localizationStrings[i+1]);
-		}
-		if (!locale->HasLookup(KEY("PluginName"))) {
-			AppWarning(TEXT("Uh oh..., unable to dynamically add our localization keys"));
-		}
-	}
-	
+    if (!locale->HasLookup(KEY("PluginName"))) {
+        isDynamicLocale = true;
+        int localizationStringCount = sizeof(localizationStrings) / sizeof(CTSTR);
+        Log(TEXT("Video Source Plugin strings not found, dynamically loading %d strings"), sizeof(localizationStrings) / sizeof(CTSTR));
+        for(int i = 0; i < localizationStringCount; i += 2) {
+            locale->AddLookupString(localizationStrings[i], localizationStrings[i+1]);
+        }
+        if (!locale->HasLookup(KEY("PluginName"))) {
+            AppWarning(TEXT("Uh oh..., unable to dynamically add our localization keys"));
+        }
+    }
+    
     API->RegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
     
     char *args[] = { 
         "--no-osd",
         "--disable-screensaver",
         "--ffmpeg-hw",
-		"--no-video-title-show",
+        "--no-video-title-show",
     };
     
     vlc = libvlc_new(4, args);
@@ -119,16 +119,16 @@ VideoSourcePlugin::VideoSourcePlugin() {
 }
 
 VideoSourcePlugin::~VideoSourcePlugin() {
-	
-	if (isDynamicLocale) {
-		int localizationStringCount = sizeof(localizationStrings) / sizeof(CTSTR);
-		Log(TEXT("Video Source Plugin instance deleted; removing dynamically loaded localization strings"));
-		for(int i = 0; i < localizationStringCount; i += 2) {
-			locale->RemoveLookupString(localizationStrings[i]);
-		}
-	}
+    
+    if (isDynamicLocale) {
+        int localizationStringCount = sizeof(localizationStrings) / sizeof(CTSTR);
+        Log(TEXT("Video Source Plugin instance deleted; removing dynamically loaded localization strings"));
+        for(int i = 0; i < localizationStringCount; i += 2) {
+            locale->RemoveLookupString(localizationStrings[i]);
+        }
+    }
 
-	isDynamicLocale = false;
+    isDynamicLocale = false;
 
 }
 
