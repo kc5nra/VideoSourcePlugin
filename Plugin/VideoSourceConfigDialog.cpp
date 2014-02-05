@@ -5,6 +5,7 @@
 #include "VideoSourcePlugin.h"
 #include "WindowsHelper.h"
 #include "resource.h"
+#include <array>
 
 #define HANDLE_DEFAULT default: return false
 
@@ -16,7 +17,7 @@ void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags);
 void Config_OnMouseMove(HWND hwnd, int x, int y, UINT keyFlags);
 void Config_OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized);
 
-String deinterlacing_modes[] = {TEXT("none"), TEXT("blend"), TEXT("bob"), TEXT("discard"), TEXT("linear"), TEXT("mean"), TEXT("x"), TEXT("yadif"), TEXT("yadif2x")};
+std::array<String, 9> deinterlacing_modes = {TEXT("none"), TEXT("blend"), TEXT("bob"), TEXT("discard"), TEXT("linear"), TEXT("mean"), TEXT("x"), TEXT("yadif"), TEXT("yadif2x")};
 
 VideoSourceConfigDialog::VideoSourceConfigDialog(VideoSourceConfig *config)
 {
@@ -158,10 +159,10 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     _this->PlaylistFilesDropped(config->playlist);
 
     index = 0;
-    for(int i = 0; i < 9; ++i) {
-        ComboBox_AddString(_this->hwndDeinterlacing,deinterlacing_modes[i]);
-        if(deinterlacing_modes[i] == config->deinterlacing) {
-            index = i;
+    for(auto i = deinterlacing_modes.begin(); i < deinterlacing_modes.end(); ++i) {
+        ComboBox_AddString(_this->hwndDeinterlacing, *i);
+        if(*i == config->deinterlacing) {
+            index = i - deinterlacing_modes.begin();
         }
     }
     ComboBox_SetCurSel(_this->hwndDeinterlacing, index);
