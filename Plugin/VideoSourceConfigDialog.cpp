@@ -90,7 +90,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     _this->hwndAddMedia                 = GetDlgItem(hwnd, IDC_ADD_MEDIA);
     _this->hwndRemoveMedia              = GetDlgItem(hwnd, IDC_REMOVE_MEDIA);
     _this->hwndPlaylistLooping          = GetDlgItem(hwnd, IDC_PLAYLIST_LOOP);
-    _this->hwndDeinterlacing			= GetDlgItem(hwnd, IDC_DEINTERLACING);
+    _this->hwndDeinterlacing            = GetDlgItem(hwnd, IDC_DEINTERLACING);
 
     _this->playlistDropTarget           = DropTarget::RegisterDropWindow(_this->hwndPlaylist, _this->playlistDropListener);
 
