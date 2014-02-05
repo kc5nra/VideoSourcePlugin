@@ -34,7 +34,7 @@ VideoSourceConfigDialog::~VideoSourceConfigDialog()
 
 bool VideoSourceConfigDialog::Show()
 {
-    return DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), API->GetMainWindow(), Config_DlgProc, (LPARAM)this) == IDOK;
+    return DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), OBSGetMainWindow(), Config_DlgProc, (LPARAM)this) == IDOK;
 }
 
 void VideoSourceConfigDialog::PlaylistFilesDropped(StringList &files)

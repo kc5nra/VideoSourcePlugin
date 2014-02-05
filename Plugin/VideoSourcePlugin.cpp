@@ -102,7 +102,7 @@ VideoSourcePlugin::VideoSourcePlugin() {
         }
     }
     
-    API->RegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
+    OBSRegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
     
     char *args[] = { 
         "--no-osd",
