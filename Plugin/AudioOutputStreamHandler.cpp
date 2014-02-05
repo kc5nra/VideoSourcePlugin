@@ -83,7 +83,7 @@ int AudioOutputStreamHandler::AudioSetupCallback(char *format, unsigned int *rat
         unsigned int channelMask = 0;
 
         *channels = 2;
-        *rate = 44100;
+        *rate = OBSGetSampleRateHz();
 
         audioSource = new VideoAudioSource(bitsPerSample, blockSize, channelMask, *rate, *channels);
 
