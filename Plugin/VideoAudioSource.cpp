@@ -39,6 +39,7 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
 
         int64_t pts;
         int samplesProcessed = 0;
+        bool firstrun = true;
         while(samplesProcessed != sampleFrameCount) {
             int remaining = sampleFrameCount - samplesProcessed;
             AudioTimestamp &ts = sampleBufferPts[0];
@@ -48,7 +49,10 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
                 samplesProcessed += ts.count;
                 sampleBufferPts.erase(sampleBufferPts.begin());
             }
-            pts = ts.pts / 1000;
+            if(firstrun) {
+                pts = ts.pts / 1000;
+            }
+            firstrun = false;
         }
 
         mcpy(outputBuffer.Array(), sampleBuffer.Array(), sampleSegmentSize);
