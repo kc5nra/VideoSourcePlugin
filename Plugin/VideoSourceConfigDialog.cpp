@@ -5,6 +5,7 @@
 #include "VideoSourcePlugin.h"
 #include "WindowsHelper.h"
 #include "resource.h"
+#include <array>
 
 #define HANDLE_DEFAULT default: return false
 
@@ -15,6 +16,8 @@ INT_PTR CALLBACK Config_OnNotify(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 void Config_OnLButtonUp(HWND hwnd, int x, int y, UINT keyFlags);
 void Config_OnMouseMove(HWND hwnd, int x, int y, UINT keyFlags);
 void Config_OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized);
+
+std::array<String, 9> deinterlacing_modes = {TEXT("none"), TEXT("blend"), TEXT("bob"), TEXT("discard"), TEXT("linear"), TEXT("mean"), TEXT("x"), TEXT("yadif"), TEXT("yadif2x")};
 
 VideoSourceConfigDialog::VideoSourceConfigDialog(VideoSourceConfig *config)
 {
@@ -31,7 +34,7 @@ VideoSourceConfigDialog::~VideoSourceConfigDialog()
 
 bool VideoSourceConfigDialog::Show()
 {
-    return DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), API->GetMainWindow(), Config_DlgProc, (LPARAM)this) == IDOK;
+    return DialogBoxParam(VideoSourcePlugin::hinstDLL, MAKEINTRESOURCE(IDD_VIDEOCONFIG), OBSGetMainWindow(), Config_DlgProc, (LPARAM)this) == IDOK;
 }
 
 void VideoSourceConfigDialog::PlaylistFilesDropped(StringList &files)
@@ -87,6 +90,7 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     _this->hwndAddMedia                 = GetDlgItem(hwnd, IDC_ADD_MEDIA);
     _this->hwndRemoveMedia              = GetDlgItem(hwnd, IDC_REMOVE_MEDIA);
     _this->hwndPlaylistLooping          = GetDlgItem(hwnd, IDC_PLAYLIST_LOOP);
+    _this->hwndDeinterlacing            = GetDlgItem(hwnd, IDC_DEINTERLACING);
 
     _this->playlistDropTarget           = DropTarget::RegisterDropWindow(_this->hwndPlaylist, _this->playlistDropListener);
 
@@ -153,6 +157,15 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     Button_SetCheck(_this->hwndPlaylistLooping, config->isPlaylistLooping);
 
     _this->PlaylistFilesDropped(config->playlist);
+
+    index = 0;
+    for(auto i = deinterlacing_modes.begin(); i < deinterlacing_modes.end(); ++i) {
+        ComboBox_AddString(_this->hwndDeinterlacing, *i);
+        if(*i == config->deinterlacing) {
+            index = i - deinterlacing_modes.begin();
+        }
+    }
+    ComboBox_SetCurSel(_this->hwndDeinterlacing, index);
 
     FORWARD_WM_COMMAND(
         hwnd, 
@@ -333,6 +346,7 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
             config->width = GetEditText(_this->hwndWidth).ToInt();
             config->height = GetEditText(_this->hwndHeight).ToInt();
+            config->deinterlacing = deinterlacing_modes[ComboBox_GetCurSel(_this->hwndDeinterlacing)];
             config->volume = Slider_GetPos(_this->hwndVolume);
             config->isStretching = Button_IsChecked(_this->hwndStretch);
             config->isAudioOutputToStream = Button_IsChecked(_this->hwndIsAudioOutputToStream);

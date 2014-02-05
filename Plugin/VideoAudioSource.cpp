@@ -22,12 +22,12 @@ VideoAudioSource::VideoAudioSource(unsigned int bitsPerSample, unsigned int bloc
 
     InitAudioData(false, channels, rate, bitsPerSample, blockSize, channelMask);
     
-    API->AddAudioSource(this);
+    OBSAddAudioSource(this);
 }
 
 VideoAudioSource::~VideoAudioSource()
 {
-    API->RemoveAudioSource(this);
+    OBSRemoveAudioSource(this);
     DeleteCriticalSection(&sampleBufferLock);
 }
 
@@ -58,7 +58,7 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
 
         *buffer = outputBuffer.Array();
         *numFrames = sampleFrameCount;
-        *timestamp = API->GetAudioTime();
+        *timestamp = OBSGetAudioTime();
         
         // get the difference between vlc internal clock and audio clock
         int64_t vlcClockDiff = libvlc_delay(*timestamp * 1000);
