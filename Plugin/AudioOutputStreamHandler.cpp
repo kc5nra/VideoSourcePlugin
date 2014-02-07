@@ -100,5 +100,6 @@ void AudioOutputStreamHandler::AudioCleanupCallback()
 
 void AudioOutputStreamHandler::AudioPlayCallback(const void *samples, unsigned int count, int64_t pts)
 {
+    //Log(TEXT("audioplaycb: %lld"), OBSGetAudioTime());
     audioSource->PushAudio(samples, count, pts);
 }

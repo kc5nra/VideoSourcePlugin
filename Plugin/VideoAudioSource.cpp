@@ -14,6 +14,7 @@ VideoAudioSource::VideoAudioSource(unsigned int bitsPerSample, unsigned int bloc
     this->channelMask = channelMask;
     this->rate = rate;
     this->channels = channels;
+    this->lastTimestamp = 0;
 
     sampleFrameCount   = this->rate / 100;
     sampleSegmentSize  = this->blockSize * sampleFrameCount;
@@ -58,11 +59,20 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
 
         *buffer = outputBuffer.Array();
         *numFrames = sampleFrameCount;
-        *timestamp = OBSGetAudioTime();
+        if(!lastTimestamp || OBSGetAudioTime() > lastTimestamp) {
+             *timestamp = OBSGetAudioTime();
+        }
+        else {
+            *timestamp = lastTimestamp + 10;
+        }
+
+        lastTimestamp = *timestamp;
         
         // get the difference between vlc internal clock and audio clock
-        int64_t vlcClockDiff = libvlc_delay(*timestamp * 1000);
+        int64_t vlcClockDiff = libvlc_delay(OBSGetAudioTime() * 1000);
         pts += (vlcClockDiff / 1000);
+
+        //Log(TEXT("timestamp: %lld, pts: %llu, GetAudioTime(): %llu, orig pts: %llu"), *timestamp, pts, OBSGetAudioTime(), pts - (vlcClockDiff / 1000));
         
         // only set if in the future
         if (pts >= *timestamp) {
@@ -97,6 +107,8 @@ void VideoAudioSource::PushAudio(const void *lpData, unsigned int size, int64_t 
         audioTimestamp.pts = pts;
 
         sampleBufferPts.push_back(audioTimestamp);
+
+        
 
         LeaveCriticalSection(&sampleBufferLock);
     }

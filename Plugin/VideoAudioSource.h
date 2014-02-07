@@ -35,6 +35,7 @@ private:
     std::vector<AudioTimestamp> sampleBufferPts;
     List<BYTE> sampleBuffer;
     List<BYTE> outputBuffer;
+	QWORD lastTimestamp;
 
     int offset;
 
