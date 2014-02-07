@@ -59,7 +59,7 @@ bool VideoAudioSource::GetNextBuffer(void **buffer, UINT *numFrames, QWORD *time
 
         *buffer = outputBuffer.Array();
         *numFrames = sampleFrameCount;
-        if(!lastTimestamp || OBSGetAudioTime() > lastTimestamp) {
+        if(!lastTimestamp || OBSGetAudioTime() > lastTimestamp + 10) {
              *timestamp = OBSGetAudioTime();
         }
         else {
