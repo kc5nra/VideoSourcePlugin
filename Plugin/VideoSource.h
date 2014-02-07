@@ -15,7 +15,6 @@ class AudioOutputStreamHandler;
 
 class VideoSource : public ImageSource
 {
-    class BrowserSourceListener;
 
 public:
     VideoSource(XElement *data);

@@ -83,7 +83,7 @@ int AudioOutputStreamHandler::AudioSetupCallback(char *format, unsigned int *rat
         unsigned int channelMask = 0;
 
         *channels = 2;
-        *rate = 44100;
+        *rate = OBSGetSampleRateHz();
 
         audioSource = new VideoAudioSource(bitsPerSample, blockSize, channelMask, *rate, *channels);
 
@@ -100,5 +100,6 @@ void AudioOutputStreamHandler::AudioCleanupCallback()
 
 void AudioOutputStreamHandler::AudioPlayCallback(const void *samples, unsigned int count, int64_t pts)
 {
+    //Log(TEXT("audioplaycb: %lld"), OBSGetAudioTime());
     audioSource->PushAudio(samples, count, pts);
 }

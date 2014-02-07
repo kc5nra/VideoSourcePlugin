@@ -11,7 +11,7 @@
 
 #include <cstdio>
 
-#define BROWSER_SOURCE_CLASS TEXT("VideoSource")
+#define VIDEO_SOURCE_CLASS TEXT("VideoSource")
 
 HINSTANCE VideoSourcePlugin::hinstDLL = NULL;
 VideoSourcePlugin *VideoSourcePlugin::instance = NULL;
@@ -21,7 +21,7 @@ ImageSource* STDCALL CreateVideoSource(XElement *data)
     return new VideoSource(data);
 }
 
-bool STDCALL ConfigureBrowserSource(XElement *element, bool bCreating)
+bool STDCALL ConfigureVideoSource(XElement *element, bool bCreating)
 {
 
     XElement *dataElement = element->GetElement(TEXT("data"));
@@ -102,7 +102,7 @@ VideoSourcePlugin::VideoSourcePlugin() {
         }
     }
     
-    OBSRegisterImageSourceClass(BROWSER_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureBrowserSource);
+    OBSRegisterImageSourceClass(VIDEO_SOURCE_CLASS, STR("ClassName"), (OBSCREATEPROC)CreateVideoSource, (OBSCONFIGPROC)ConfigureVideoSource);
     
     char *args[] = { 
         "--no-osd",
