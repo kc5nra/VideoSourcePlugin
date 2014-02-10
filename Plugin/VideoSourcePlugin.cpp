@@ -114,7 +114,7 @@ VideoSourcePlugin::VideoSourcePlugin() {
     vlc = libvlc_new(4, args);
 
 #ifdef VLC2X
-    libvlc_log_set(vlc, log_callback, nullptr);
+    //libvlc_log_set(vlc, log_callback, nullptr);
 #endif
 }
 
