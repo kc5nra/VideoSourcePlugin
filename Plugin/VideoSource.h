@@ -41,7 +41,7 @@ public:
     libvlc_media_player_t *mediaPlayer;
     bool isRenderingWithoutRef;
     volatile bool isInScene;
-    bool hasSetVolume;
+    bool hasSetAsyncProperties;
 
 public:
     VideoSourceConfig *config;

@@ -91,8 +91,16 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     _this->hwndRemoveMedia              = GetDlgItem(hwnd, IDC_REMOVE_MEDIA);
     _this->hwndPlaylistLooping          = GetDlgItem(hwnd, IDC_PLAYLIST_LOOP);
     _this->hwndDeinterlacing            = GetDlgItem(hwnd, IDC_DEINTERLACING);
+    _this->hwndVideoFilter              = GetDlgItem(hwnd, IDC_VIDEOFILTER);
+    _this->hwndApplyVideoFilter         = GetDlgItem(hwnd, IDC_APPLYVIDEOFILTER);
+    _this->hwndVideoGamma               = GetDlgItem(hwnd, IDC_VIDEOGAMMA); 
+    _this->hwndVideoContrast            = GetDlgItem(hwnd, IDC_VIDEOCONTRAST);
+    _this->hwndVideoBrightness          = GetDlgItem(hwnd, IDC_VIDEOBRIGHTNESS);
+    _this->hwndResetVideoFilter         = GetDlgItem(hwnd, IDC_RESETVIDEOFILTER);
 
     _this->playlistDropTarget           = DropTarget::RegisterDropWindow(_this->hwndPlaylist, _this->playlistDropListener);
+
+
 
     Edit_SetText(_this->hwndWidth,      IntString(config->width).Array());
     Edit_SetText(_this->hwndHeight,     IntString(config->height).Array());
@@ -100,6 +108,24 @@ BOOL Config_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     Button_SetCheck(_this->hwndStretch, config->isStretching);
     Slider_SetRange(_this->hwndVolume, 0, 100);
     Slider_SetPos(_this->hwndVolume, config->volume);
+    
+    EnableWindow(_this->hwndVideoGamma, config->isApplyingVideoFilter);
+    EnableWindow(_this->hwndVideoContrast, config->isApplyingVideoFilter);
+    EnableWindow(_this->hwndVideoBrightness, config->isApplyingVideoFilter);
+    EnableWindow(_this->hwndResetVideoFilter, config->isApplyingVideoFilter);
+    
+    Button_SetCheck(_this->hwndApplyVideoFilter, config->isApplyingVideoFilter);
+
+    Slider_SetRange(_this->hwndVideoGamma, 1, 1000);
+    Slider_SetPos(_this->hwndVideoGamma, config->videoGamma);
+
+    Slider_SetRange(_this->hwndVideoContrast, 0, 200);
+    Slider_SetPos(_this->hwndVideoContrast, config->videoContrast);
+
+    Slider_SetRange(_this->hwndVideoBrightness, 0, 200);
+    Slider_SetPos(_this->hwndVideoBrightness, config->videoBrightness);
+
+    
 
     int index = -1;
 
@@ -187,21 +213,16 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             if (codeNotify == BN_CLICKED) {
                 VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
 
-                HWND hwndIsAudioOutputToStream = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_STREAM);
-                HWND hwndIsAudioOutputToDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TO_DEVICE);
-                HWND hwndAudioOutputType = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_TYPE);
-                HWND hwndAudioOutputDevice = GetDlgItem(hwnd, IDC_AUDIO_OUTPUT_DEVICE);
-
                 bool isAudioOutputToStream = id == IDC_AUDIO_OUTPUT_TO_STREAM;
 
-                EnableWindow(hwndAudioOutputType, !isAudioOutputToStream);
-                EnableWindow(hwndAudioOutputDevice, !isAudioOutputToStream);
+                EnableWindow(_this->hwndAudioOutputType, !isAudioOutputToStream);
+                EnableWindow(_this->hwndAudioOutputDevice, !isAudioOutputToStream);
 
                 if (!isAudioOutputToStream) {
                     int index = ComboBox_GetCurSel(_this->hwndAudioOutputType);
                     if (index > 0) {
                         AudioOutputType &type = _this->GetConfig()->GetAudioOutputTypes()[index];
-                        EnableWindow(hwndAudioOutputDevice, (type.GetAudioOutputDevices().size()) ? true : false);
+                        EnableWindow(_this->hwndAudioOutputDevice, (type.GetAudioOutputDevices().size()) ? true : false);
                     }
                 }
             }
@@ -339,6 +360,26 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             }
             break;
         }
+    case IDC_APPLYVIDEOFILTER:
+        {
+            if (codeNotify == BN_CLICKED) {
+                VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
+                bool isChecked = Button_GetCheck(_this->hwndApplyVideoFilter) == 1;
+                EnableWindow(_this->hwndVideoGamma, isChecked);
+                EnableWindow(_this->hwndVideoContrast, isChecked);
+                EnableWindow(_this->hwndVideoBrightness, isChecked);
+                EnableWindow(_this->hwndResetVideoFilter, isChecked);
+            }
+            break;
+        }
+    case IDC_RESETVIDEOFILTER:
+        {
+            VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
+            Slider_SetPos(_this->hwndVideoGamma, 100);
+            Slider_SetPos(_this->hwndVideoContrast, 100);
+            Slider_SetPos(_this->hwndVideoBrightness, 100);
+            break;
+        }
     case IDOK:
         {
             VideoSourceConfigDialog *_this = (VideoSourceConfigDialog *)GetWindowLongPtr(hwnd, DWLP_USER);
@@ -350,6 +391,11 @@ void Config_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             config->volume = Slider_GetPos(_this->hwndVolume);
             config->isStretching = Button_IsChecked(_this->hwndStretch);
             config->isAudioOutputToStream = Button_IsChecked(_this->hwndIsAudioOutputToStream);
+
+            config->isApplyingVideoFilter = Button_IsChecked(_this->hwndApplyVideoFilter);
+            config->videoGamma = Slider_GetPos(_this->hwndVideoGamma);
+            config->videoContrast = Slider_GetPos(_this->hwndVideoContrast);
+            config->videoBrightness = Slider_GetPos(_this->hwndVideoBrightness);
 
             int audioOutputTypeIndex = ComboBox_GetCurSel(_this->hwndAudioOutputType);
             int audioOutputDeviceIndex = ComboBox_GetCurSel(_this->hwndAudioOutputDevice);

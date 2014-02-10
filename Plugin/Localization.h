@@ -33,7 +33,13 @@ static CTSTR localizationStrings[] = {
     KEY("MediaFileOrUrl"),      L"Enter a file path or a URL pointing to a media object",
     KEY("Playlist"),            L"Playlist Settings",
     KEY("PlaylistLoop"),        L"Playlist looping",
-    KEY("PlaylistEditor"),        L"Playlist Editor",
+    KEY("PlaylistEditor"),      L"Playlist Editor",
     KEY("Deinterlacing"),       L"Deinterlacing:",
+    KEY("ApplyVideoFilter"),    L"Apply Video Filters",
+    KEY("VideoFilter"),         L"Video Filters",
+    KEY("VideoGamma"),          L"Gamma",
+    KEY("VideoContrast"),       L"Contrast",
+    KEY("VideoBrightness"),     L"Brightness",
+    KEY("ResetVideoFilter"),    L"Reset Filters"
 };
 

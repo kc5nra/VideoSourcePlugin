@@ -32,6 +32,14 @@ public:
     HWND hwndAddMedia;
     HWND hwndRemoveMedia;
     HWND hwndDeinterlacing;
+    HWND hwndVideoFilter;
+    HWND hwndApplyVideoFilter;
+    HWND hwndVideoGamma;
+    HWND hwndVideoContrast;
+    HWND hwndVideoBrightness;
+    HWND hwndResetVideoFilter;
+
+
 
     DropTarget *playlistDropTarget;
     DropTargetListener *playlistDropListener;

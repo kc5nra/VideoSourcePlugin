@@ -11,7 +11,6 @@ VideoSource::VideoSource(XElement *data)
 {
     Log(TEXT("Using Video Source"));
 
-    
     vlc = VideoSourcePlugin::instance->GetVlc();
     mediaPlayer = nullptr;
     pixelData = nullptr;
@@ -74,9 +73,9 @@ void unlock(void *data, void *id, void *const *pixelData)
 {
     VideoSource *_this = static_cast<VideoSource *>(data);
 
-    if (!_this->hasSetVolume)
+    if (!_this->hasSetAsyncProperties)
     {
-        _this->hasSetVolume |= libvlc_audio_set_volume(_this->mediaPlayer, _this->config->volume) == 0;
+        _this->hasSetAsyncProperties |= libvlc_audio_set_volume(_this->mediaPlayer, _this->config->volume) == 0;
     }
 
     if (_this->isInScene) {
@@ -112,6 +111,15 @@ static void vlcEvent(const libvlc_event_t *e, void *data)
         EnterCriticalSection(&_this->textureLock);
         _this->isRendering = true;
         LeaveCriticalSection(&_this->textureLock);
+    } else if (e->type == libvlc_MediaPlayerPositionChanged) {
+        libvlc_event_detach(libvlc_media_player_event_manager(_this->mediaPlayer), libvlc_MediaPlayerPositionChanged, vlcEvent, _this);
+        
+        libvlc_video_set_adjust_int(_this->mediaPlayer, libvlc_adjust_Enable, _this->config->isApplyingVideoFilter ? 1 : 0);
+        if (_this->config->isApplyingVideoFilter) {
+            libvlc_video_set_adjust_float(_this->mediaPlayer, libvlc_adjust_Gamma, float(_this->config->videoGamma) / 100);
+            libvlc_video_set_adjust_float(_this->mediaPlayer, libvlc_adjust_Contrast, float(_this->config->videoContrast) / 100);
+            libvlc_video_set_adjust_float(_this->mediaPlayer, libvlc_adjust_Brightness, float(_this->config->videoBrightness) / 100);
+        }
     }
 
 }
@@ -260,7 +268,7 @@ void VideoSource::UpdateSettings()
     
     config->Reload();
 
-    hasSetVolume = false;
+    hasSetAsyncProperties = false;
 
     videoSize.x = float(config->width);
     videoSize.y = float(config->height);
@@ -349,11 +357,13 @@ void VideoSource::UpdateSettings()
     
     // set (possibly in vane) the volume.  If it doesn't work it will try later until it works
     // vlc... que pasa amigo
-    hasSetVolume = libvlc_audio_set_volume(mediaPlayer, config->volume) == 0;
+    hasSetAsyncProperties = libvlc_audio_set_volume(mediaPlayer, config->volume) == 0;
     
     EnterCriticalSection(&textureLock);
     isRendering = true;
     LeaveCriticalSection(&textureLock);
+
+    libvlc_event_attach(libvlc_media_player_event_manager(mediaPlayer), libvlc_MediaPlayerPositionChanged, vlcEvent, this);
 
     libvlc_media_list_player_play(mediaListPlayer);
     

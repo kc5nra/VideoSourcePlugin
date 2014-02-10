@@ -88,6 +88,10 @@ public:
     bool isPlaylistLooping;
     StringList playlist;
     String deinterlacing;
+    bool isApplyingVideoFilter;
+    unsigned int videoGamma;
+    unsigned int videoContrast;
+    unsigned int videoBrightness;
 
 public:
     VideoSourceConfig(XElement *element)
@@ -115,6 +119,10 @@ public:
         audioOutputDevice = TEXT("");
         isPlaylistLooping = false;
         deinterlacing = TEXT("none");
+        isApplyingVideoFilter = false;
+        videoGamma = 100;
+        videoContrast = 100;
+        videoBrightness = 100;
     }
 
     void Reload()
@@ -131,6 +139,10 @@ public:
         playlist.Clear();
         element->GetStringList(TEXT("playlist"), playlist);
         deinterlacing = element->GetString(TEXT("deinterlacing"));
+        isApplyingVideoFilter = element->GetInt(TEXT("isApplyingVideoFilter")) == 1;
+        videoGamma = element->GetInt(TEXT("videoGamma"));
+        videoContrast = element->GetInt(TEXT("videoContrast"));
+        videoBrightness = element->GetInt(TEXT("videoBrightness"));
     }
 
     void Save()
@@ -146,6 +158,10 @@ public:
         element->SetInt(TEXT("isPlaylistLooping"), isPlaylistLooping ? 1 : 0);
         element->SetStringList(TEXT("playlist"), playlist);
         element->SetString(TEXT("deinterlacing"), deinterlacing);
+        element->SetInt(TEXT("isApplyingVideoFilter"), isApplyingVideoFilter ? 1 : 0);
+        element->SetInt(TEXT("videoGamma"), videoGamma);
+        element->SetInt(TEXT("videoContrast"), videoContrast);
+        element->SetInt(TEXT("videoBrightness"), videoBrightness);
     }
 
     void InitializeAudioOutputVectors(libvlc_instance_t *vlc) {
