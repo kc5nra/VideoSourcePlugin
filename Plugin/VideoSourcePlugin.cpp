@@ -107,7 +107,7 @@ VideoSourcePlugin::VideoSourcePlugin() {
     char *args[] = { 
         "--no-osd",
         "--disable-screensaver",
-        "--ffmpeg-hw",
+        "--avcodec-hw=any",
         "--no-video-title-show",
     };
     
